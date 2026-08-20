@@ -1,6 +1,7 @@
 import { useState } from "react";
 import "./App.css";
 import { Frame } from "./components/Frame";
+import { FrameUnsorted } from "./components/FrameUnsorted";
 
 export interface IItem {
 	id: number;
@@ -56,13 +57,12 @@ function App() {
 					margin: "0 auto",
 				}}
 			>
-				<Frame
-					name="unselected"
+				<FrameUnsorted
 					items={unselected}
 					onSelect={selectItem}
 					addItem={addItem}
 				/>
-				<Frame name="selected" items={selected} onSelect={unselectItem} />
+				<Frame items={selected} onSelect={unselectItem} />
 			</div>
 		</main>
 	);
