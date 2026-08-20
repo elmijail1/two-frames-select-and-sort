@@ -1,7 +1,7 @@
-import { useState } from "react";
-import "./App.css";
-import { Frame } from "./components/Frame";
+import { FrameSorted } from "./components/FrameSorted";
 import { FrameUnsorted } from "./components/FrameUnsorted";
+import "./App.css";
+import { useState } from "react";
 
 export interface IItem {
 	id: number;
@@ -37,6 +37,19 @@ function App() {
 			),
 		);
 	}
+	function reorderSelected(fromId: number, toId: number) {
+		setSelected((prev) => {
+			const fromIndex = prev.findIndex((i) => i.id === fromId);
+			const toIndex = prev.findIndex((i) => i.id === toId);
+			if (fromIndex === -1 || toIndex === -1 || fromIndex === toIndex) {
+				return prev;
+			}
+			const next = [...prev];
+			const [moved] = next.splice(fromIndex, 1);
+			next.splice(toIndex, 0, moved);
+			return next;
+		});
+	}
 	function addItem(id: number) {
 		if (items.find((i) => i.id === id)) {
 			throw new Error("Duplicate IDs aren't allowed");
@@ -62,7 +75,11 @@ function App() {
 					onSelect={selectItem}
 					addItem={addItem}
 				/>
-				<Frame items={selected} onSelect={unselectItem} />
+				<FrameSorted
+					items={selected}
+					onSelect={unselectItem}
+					onReorder={reorderSelected}
+				/>
 			</div>
 		</main>
 	);

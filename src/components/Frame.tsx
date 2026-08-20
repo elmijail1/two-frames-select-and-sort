@@ -7,9 +7,10 @@ export interface IFrameProps {
 	items: IItem[];
 	onSelect: (id: number) => void;
 	children?: React.ReactNode;
+	sorted?: boolean;
 }
 
-export function Frame({ items, onSelect, children }: IFrameProps) {
+export function Frame({ items, onSelect, children, sorted }: IFrameProps) {
 	const [filter, setFilter] = useState<string>("");
 	const [displayed, setDisplayed] = useState<IItem[]>([]);
 
@@ -37,7 +38,7 @@ export function Frame({ items, onSelect, children }: IFrameProps) {
 			}}
 		>
 			<Filter filter={filter} setFilter={setFilter} />
-			<Items displayed={displayed} onSelect={onSelect} />
+			<Items displayed={displayed} onSelect={onSelect} sorted={sorted} />
 			{children}
 		</section>
 	);
