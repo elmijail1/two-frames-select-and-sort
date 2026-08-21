@@ -13,6 +13,7 @@ export interface IFrameProps {
 export function Frame({ items, onSelect, children, sorted }: IFrameProps) {
 	const [filter, setFilter] = useState<string>("");
 	const [displayed, setDisplayed] = useState<IItem[]>([]);
+	console.log("displayed: ", sorted ? displayed : "");
 
 	useEffect(() => {
 		setDisplayed([...items]);

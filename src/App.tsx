@@ -37,16 +37,23 @@ function App() {
 			),
 		);
 	}
-	function reorderSelected(fromId: number, toId: number) {
+	function reorderSelected(fromId: number, newIndex: number) {
 		setSelected((prev) => {
+			console.log("prev items: ", prev);
 			const fromIndex = prev.findIndex((i) => i.id === fromId);
-			const toIndex = prev.findIndex((i) => i.id === toId);
-			if (fromIndex === -1 || toIndex === -1 || fromIndex === toIndex) {
-				return prev;
+			console.log("fromINDEX: ", fromIndex, "\n newIndex: ", newIndex);
+			if (
+				fromIndex === -1 ||
+				newIndex < 0 ||
+				newIndex >= prev.length ||
+				fromIndex === newIndex
+			) {
+				return prev; // PROBLEM: stops here now
 			}
 			const next = [...prev];
 			const [moved] = next.splice(fromIndex, 1);
-			next.splice(toIndex, 0, moved);
+			next.splice(newIndex, 0, moved);
+			console.log("next: ", next);
 			return next;
 		});
 	}
