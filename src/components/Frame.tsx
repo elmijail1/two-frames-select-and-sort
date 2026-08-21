@@ -8,12 +8,22 @@ export interface IFrameProps {
 	onSelect: (id: number) => void;
 	children?: React.ReactNode;
 	sorted?: boolean;
+	onDisplayedChange?: (displayed: IItem[]) => void;
 }
 
-export function Frame({ items, onSelect, children, sorted }: IFrameProps) {
+export function Frame({
+	items,
+	onSelect,
+	children,
+	sorted,
+	onDisplayedChange,
+}: IFrameProps) {
 	const [filter, setFilter] = useState<string>("");
 	const [displayed, setDisplayed] = useState<IItem[]>([]);
-	console.log("displayed: ", sorted ? displayed : "");
+
+	useEffect(() => {
+		onDisplayedChange?.(displayed);
+	}, [displayed, onDisplayedChange]);
 
 	useEffect(() => {
 		setDisplayed([...items]);

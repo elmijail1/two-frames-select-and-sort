@@ -37,23 +37,22 @@ function App() {
 			),
 		);
 	}
-	function reorderSelected(fromId: number, newIndex: number) {
+	function reorderSelected(
+		id: number,
+		neighbourId: number,
+		side: "before" | "after",
+	) {
 		setSelected((prev) => {
-			console.log("prev items: ", prev);
-			const fromIndex = prev.findIndex((i) => i.id === fromId);
-			console.log("fromINDEX: ", fromIndex, "\n newIndex: ", newIndex);
-			if (
-				fromIndex === -1 ||
-				newIndex < 0 ||
-				newIndex >= prev.length ||
-				fromIndex === newIndex
-			) {
-				return prev; // PROBLEM: stops here now
-			}
+			const fromIndex = prev.findIndex((i) => i.id === id);
+			if (fromIndex === -1) return prev;
 			const next = [...prev];
 			const [moved] = next.splice(fromIndex, 1);
-			next.splice(newIndex, 0, moved);
-			console.log("next: ", next);
+			let targetIndex = next.findIndex((i) => i.id === neighbourId);
+			if (targetIndex === -1) return prev;
+			if (side === "after") {
+				targetIndex += 1;
+			}
+			next.splice(targetIndex, 0, moved);
 			return next;
 		});
 	}
