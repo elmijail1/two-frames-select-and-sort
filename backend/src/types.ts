@@ -14,6 +14,10 @@ export type TFindItemsFilteredParams = Omit<
 > & {
 	filter: number;
 };
+export type TFindItemsFilteredOptionalParams = Omit<
+	TGetItemsQueryParams,
+	"selected"
+>;
 
 export type TFindItemsReturn = {
 	items: IItem[];

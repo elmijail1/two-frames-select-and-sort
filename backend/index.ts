@@ -1,5 +1,12 @@
 import express, { type Express } from "express";
-import { itemsById, seedData } from "./src/data";
+import {
+	itemsById,
+	seedData,
+	selectedIdsOrder,
+	selectedIdsUniqueValues,
+	unselectedIdsOrder,
+	unselectedIdsUniqueValues,
+} from "./src/data";
 import {
 	findSelectedItems,
 	findUnselectedItems,
@@ -23,12 +30,12 @@ app.get("/seed", (_req, res) => {
 });
 
 app.get("/items", (req, res) => {
-	const result = getItemsQuerySchema.safeParse(req.query);
-	if (!result.success) {
-		res.status(400).json({ error: result.error });
+	const parsedParams = getItemsQuerySchema.safeParse(req.query);
+	if (!parsedParams.success) {
+		res.status(400).json({ error: parsedParams.error });
 		return;
 	}
-	const { selected, filter, limit, latestId } = result.data;
+	const { selected, filter, limit, latestId } = parsedParams.data;
 
 	if (selected) {
 		const items = findSelectedItems({ latestId, filter, limit });
@@ -40,6 +47,21 @@ app.get("/items", (req, res) => {
 				: findUnselectedItems({ latestId, limit });
 		res.json(items);
 	}
+});
+
+// TOREMOVE: for testing
+app.post("/items/selected", (req, res) => {
+	console.log(req.body);
+	const { items } = req.body ? req.body : [];
+	for (const item of items) {
+		selectedIdsOrder.push(item.id);
+		selectedIdsUniqueValues.add(item.id);
+		unselectedIdsUniqueValues.delete(item.id);
+		const ind = unselectedIdsOrder.indexOf(item.id);
+		unselectedIdsOrder.splice(ind, 1);
+	}
+	console.log("selectedIdsOrder: ", selectedIdsOrder);
+	res.json(items);
 });
 
 app.listen(PORT, () => {

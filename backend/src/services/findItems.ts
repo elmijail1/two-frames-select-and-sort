@@ -7,31 +7,45 @@ import {
 } from "../data";
 import type {
 	IItem,
+	TFindItemsFilteredOptionalParams,
 	TFindItemsFilteredParams,
 	TFindItemsParams,
 	TFindItemsReturn,
 } from "../types";
 import { findFirstIndexGreaterThan } from "./utilities";
 
-// TODO: WIP
 export function findSelectedItems({
 	latestId,
 	filter,
 	limit,
-}: TFindItemsFilteredParams): TFindItemsReturn {
-	// TOFIX: lazy temporary TS pacifier
-	if (!latestId) return { items: [], newLatestId: null };
-	// 👇 add a number limitation for filteredIds?
-	const filteredIds = filter
-		? selectedIdsOrder.filter((id) => String(id).startsWith(filter))
-		: selectedIdsOrder;
-	// 👇 we must make sure items aren't undefined
-	const page = filteredIds
-		.slice(latestId, latestId + limit)
-		.map((id) => itemsById.get(id));
-	const nextCursor =
-		latestId + page.length < filteredIds.length ? latestId + page.length : null;
-	return { items: page, newLatestId: nextCursor };
+}: TFindItemsFilteredOptionalParams): TFindItemsReturn {
+	const items: IItem[] = [];
+	let nextIndex =
+		latestId !== undefined ? selectedIdsOrder.indexOf(latestId) + 1 : 0;
+
+	while (items.length < limit && nextIndex < selectedIdsOrder.length) {
+		const id = selectedIdsOrder[nextIndex];
+		if (unselectedIdsUniqueValues.has(id) || !selectedIdsUniqueValues.has(id)) {
+			nextIndex++;
+			continue;
+		}
+
+		if (filter !== undefined && !String(id).startsWith(String(filter))) {
+			nextIndex++;
+			continue;
+		}
+
+		const item = itemsById.get(id);
+		if (!item) {
+			nextIndex++;
+			continue;
+		}
+
+		items.push(item);
+		nextIndex++;
+	}
+	const newLatestId = items.length ? items[items.length - 1].id : null;
+	return { items, newLatestId };
 }
 
 export function findUnselectedItems({
