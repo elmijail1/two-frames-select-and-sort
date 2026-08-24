@@ -34,9 +34,10 @@ app.get("/items", (req, res) => {
 		const items = findSelectedItems({ latestId, filter, limit });
 		res.json(items);
 	} else {
-		const items = filter
-			? findUnselectedItemsFiltered({ latestId, filter, limit })
-			: findUnselectedItems({ latestId, limit });
+		const items =
+			filter !== undefined
+				? findUnselectedItemsFiltered({ latestId, filter, limit })
+				: findUnselectedItems({ latestId, limit });
 		res.json(items);
 	}
 });

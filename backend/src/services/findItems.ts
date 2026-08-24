@@ -66,24 +66,30 @@ export function findUnselectedItems({
 	return { items, newLatestId };
 }
 
-// TODO: WIP
 export function findUnselectedItemsFiltered({
 	latestId,
 	limit,
 	filter,
 }: TFindItemsFilteredParams): TFindItemsReturn {
 	const items: IItem[] = [];
-	const lowestIdUnselected = unselectedIdsOrder[0];
+	if (filter === 0) {
+		return handleZeroFilter(latestId);
+	}
+
 	const biggestIdUnselected = unselectedIdsOrder[unselectedIdsOrder.length - 1];
-	const filterNum = Number(filter);
-	if (filterNum > biggestIdUnselected || filterNum < lowestIdUnselected) {
+	if (filter > biggestIdUnselected) {
 		return { items: [], newLatestId: null };
 	}
 	let d = 0;
+	if (latestId !== undefined) {
+		while (filter * 10 ** d + 10 ** d - 1 < latestId) {
+			d++;
+		}
+	}
 	let id = 0;
-	while (items.length < limit || id < biggestIdUnselected) {
+	while (items.length < limit && id < biggestIdUnselected) {
 		const blockSize = 10 ** d;
-		const blockStart = filterNum * blockSize;
+		const blockStart = filter * blockSize;
 		if (blockStart > biggestIdUnselected) {
 			return {
 				items,
@@ -93,7 +99,7 @@ export function findUnselectedItemsFiltered({
 		const blockEnd = blockStart + blockSize - 1;
 
 		for (id = blockStart; id <= blockEnd && items.length < limit; id++) {
-			if (latestId && id <= latestId) continue;
+			if (latestId !== undefined && id <= latestId) continue;
 			if (!unselectedIdsUniqueValues.has(id) || selectedIdsUniqueValues.has(id))
 				continue;
 
@@ -103,6 +109,21 @@ export function findUnselectedItemsFiltered({
 		}
 		d++;
 	}
-	const newLatestId = id;
+	const newLatestId = items.length ? items[items.length - 1].id : null;
 	return { items, newLatestId };
+}
+
+function handleZeroFilter(latestId?: number) {
+	const alreadyDelivered = 0 <= (latestId ?? -Infinity);
+	if (
+		!alreadyDelivered &&
+		unselectedIdsUniqueValues.has(0) &&
+		!selectedIdsUniqueValues.has(0)
+	) {
+		const zeroItem = itemsById.get(0);
+		if (zeroItem) {
+			return { items: [zeroItem], newLatestId: 0 };
+		}
+	}
+	return { items: [], newLatestId: null };
 }
