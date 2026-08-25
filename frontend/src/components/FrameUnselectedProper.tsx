@@ -63,27 +63,13 @@ export function FrameUnselectedProper() {
 		placeholderData: keepPreviousData,
 	});
 	const items = data?.pages.flatMap((page) => page.items) ?? [];
-	console.log("items: ", items);
 
 	useEffect(() => {
-		console.log("we ever get here?");
 		const sentinel = sentinelRef.current;
 		const container = containerRef.current;
 		if (!sentinel) return;
-		let callCounter = 0;
 		const observer = new IntersectionObserver(
 			([entry]) => {
-				callCounter++;
-				console.log(
-					"callCounter: ",
-					callCounter,
-					"\n entry.isIntersecting: ",
-					entry.isIntersecting,
-					"\n hasNextPage: ",
-					hasNextPage,
-					"\n isFetchingNextPage: ",
-					isFetchingNextPage,
-				);
 				if (entry.isIntersecting && hasNextPage && !isFetchingNextPage) {
 					fetchNextPage();
 				}
