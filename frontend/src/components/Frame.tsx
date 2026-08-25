@@ -41,7 +41,8 @@ export function Frame({
 		<section
 			style={{
 				width: "40%",
-				height: "10rem",
+				height: "6rem",
+				overflowY: "auto",
 				border: "3px black solid",
 				display: "flex",
 				flexDirection: "column",
