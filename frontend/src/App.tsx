@@ -2,6 +2,8 @@ import { FrameSorted } from "./components/FrameSorted";
 import { FrameUnsorted } from "./components/FrameUnsorted";
 import "./App.css";
 import { useState } from "react";
+import { FrameUnselectedProper } from "./components/FrameUnselectedProper";
+import { FrameSelectedProper } from "./components/FrameSelectedProper";
 
 export interface IItem {
 	id: number;
@@ -86,6 +88,20 @@ function App() {
 					onSelect={unselectItem}
 					onReorder={reorderSelected}
 				/>
+			</div>
+
+			<div
+				style={{
+					display: "flex",
+					width: "90%",
+					justifyContent: "center",
+					gap: "1rem",
+					backgroundColor: "hsl(150, 100%, 80%)",
+					margin: "0 auto",
+				}}
+			>
+				<FrameUnselectedProper />
+				<FrameSelectedProper />
 			</div>
 		</main>
 	);
