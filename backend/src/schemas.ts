@@ -2,7 +2,6 @@ import { z } from "zod";
 import { DEF_BATCH_SIZE } from "./data";
 
 export const getItemsQuerySchema = z.object({
-	selected: z.enum(["true", "false"]).transform((v) => v === "true"),
 	filter: z.preprocess(
 		(val) => (val === "" ? undefined : val),
 		z.coerce.number().int().optional(),

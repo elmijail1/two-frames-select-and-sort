@@ -1,4 +1,4 @@
-import express, { type Express } from "express";
+import express, { Router, type Express } from "express";
 import {
 	itemsById,
 	seedData,
@@ -12,45 +12,52 @@ import {
 	findUnselectedItems,
 	findUnselectedItemsFiltered,
 } from "./src/services/findItems";
-import { getItemsQuerySchema } from "./src/schemas";
+import {
+	hasItemsQuery,
+	validateGetItemsParams,
+} from "./src/middleware/validateGetItemsParams";
 
 seedData();
 
 const app: Express = express();
+const apiRouter = Router();
 const PORT = process.env.PORT || "3000";
 
 app.use(express.json());
 
-app.get("/health", (_req, res) => {
+apiRouter.get("/health", (_req, res) => {
 	res.json({ status: "ok" });
 });
 
-app.get("/seed", (_req, res) => {
+apiRouter.get("/seed", (_req, res) => {
 	res.json(Array.from(itemsById.values()));
 });
 
-app.get("/items", (req, res) => {
-	const parsedParams = getItemsQuerySchema.safeParse(req.query);
-	if (!parsedParams.success) {
-		res.status(400).json({ error: parsedParams.error });
+apiRouter.get("/items/unselected", validateGetItemsParams, (req, res) => {
+	if (!hasItemsQuery(req)) {
+		res.status(500).json({ error: "Validator's unexpected behavior" });
 		return;
 	}
-	const { selected, filter, limit, latestId } = parsedParams.data;
+	const { filter, limit, latestId } = req.itemsQuery;
+	const items =
+		filter !== undefined
+			? findUnselectedItemsFiltered({ latestId, filter, limit })
+			: findUnselectedItems({ latestId, limit });
+	res.json(items);
+});
 
-	if (selected) {
-		const items = findSelectedItems({ latestId, filter, limit });
-		res.json(items);
-	} else {
-		const items =
-			filter !== undefined
-				? findUnselectedItemsFiltered({ latestId, filter, limit })
-				: findUnselectedItems({ latestId, limit });
-		res.json(items);
+apiRouter.get("/items/selected", validateGetItemsParams, (req, res) => {
+	if (!hasItemsQuery(req)) {
+		res.status(500).json({ error: "Validator's unexpected behavior" });
+		return;
 	}
+	const { filter, limit, latestId } = req.itemsQuery;
+	const items = findSelectedItems({ latestId, filter, limit });
+	res.json(items);
 });
 
 // TOREMOVE: for testing
-app.post("/items/selected", (req, res) => {
+apiRouter.post("/items/selected", (req, res) => {
 	console.log(req.body);
 	const { items } = req.body ? req.body : [];
 	for (const item of items) {
@@ -63,6 +70,8 @@ app.post("/items/selected", (req, res) => {
 	console.log("selectedIdsOrder: ", selectedIdsOrder);
 	res.json(items);
 });
+
+app.use("/api", apiRouter);
 
 app.listen(PORT, () => {
 	console.log(`Server listening on http://localhost:${PORT}`);

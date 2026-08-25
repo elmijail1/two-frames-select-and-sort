@@ -4,20 +4,10 @@ export interface IItem {
 	id: number;
 }
 
-export type TFindItemsParams = Omit<
-	TGetItemsQueryParams,
-	"selected" | "filter"
->;
-export type TFindItemsFilteredParams = Omit<
-	TGetItemsQueryParams,
-	"selected"
-> & {
+export type TFindItemsParams = Omit<TGetItemsQueryParams, "filter">;
+export type TFindItemsFilteredParams = TGetItemsQueryParams & {
 	filter: number;
 };
-export type TFindItemsFilteredOptionalParams = Omit<
-	TGetItemsQueryParams,
-	"selected"
->;
 
 export type TFindItemsReturn = {
 	items: IItem[];

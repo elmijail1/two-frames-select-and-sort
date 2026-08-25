@@ -5,9 +5,9 @@ import {
 	unselectedIdsOrder,
 	unselectedIdsUniqueValues,
 } from "../data";
+import type { TGetItemsQueryParams } from "../schemas";
 import type {
 	IItem,
-	TFindItemsFilteredOptionalParams,
 	TFindItemsFilteredParams,
 	TFindItemsParams,
 	TFindItemsReturn,
@@ -18,7 +18,7 @@ export function findSelectedItems({
 	latestId,
 	filter,
 	limit,
-}: TFindItemsFilteredOptionalParams): TFindItemsReturn {
+}: TGetItemsQueryParams): TFindItemsReturn {
 	const items: IItem[] = [];
 	let nextIndex =
 		latestId !== undefined ? selectedIdsOrder.indexOf(latestId) + 1 : 0;
