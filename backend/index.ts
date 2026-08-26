@@ -1,12 +1,5 @@
 import express, { Router, type Express } from "express";
-import {
-	itemsById,
-	seedData,
-	selectedIdsOrder,
-	selectedIdsUniqueValues,
-	unselectedIdsOrder,
-	unselectedIdsUniqueValues,
-} from "./src/data";
+import { itemsById, seedData } from "./src/data";
 import {
 	findSelectedItems,
 	findUnselectedItems,
@@ -16,6 +9,8 @@ import {
 	hasItemsQuery,
 	validateGetItemsParams,
 } from "./src/middleware/validateGetItemsParams";
+import { selectItems } from "./src/services/selectItems";
+import { selectItemsQuerySchema } from "./src/schemas";
 
 seedData();
 
@@ -56,19 +51,14 @@ apiRouter.get("/items/selected", validateGetItemsParams, (req, res) => {
 	res.json(items);
 });
 
-// TOREMOVE: for testing
-apiRouter.post("/items/selected", (req, res) => {
-	console.log(req.body);
-	const { items } = req.body ? req.body : [];
-	for (const item of items) {
-		selectedIdsOrder.push(item.id);
-		selectedIdsUniqueValues.add(item.id);
-		unselectedIdsUniqueValues.delete(item.id);
-		const ind = unselectedIdsOrder.indexOf(item.id);
-		unselectedIdsOrder.splice(ind, 1);
+apiRouter.post("/items/selected/batch", (req, res) => {
+	const parsingResult = selectItemsQuerySchema.safeParse(req.body);
+	if (!parsingResult.success) {
+		res.status(400).json({ error: parsingResult.error });
+		return;
 	}
-	console.log("selectedIdsOrder: ", selectedIdsOrder);
-	res.json(items);
+	const result = selectItems(parsingResult.data);
+	res.json(result);
 });
 
 app.use("/api", apiRouter);

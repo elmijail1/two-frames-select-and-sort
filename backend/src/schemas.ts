@@ -9,5 +9,7 @@ export const getItemsQuerySchema = z.object({
 	limit: z.coerce.number().int().positive().default(DEF_BATCH_SIZE),
 	latestId: z.coerce.number().optional(),
 });
+export const selectItemsQuerySchema = z.array(z.number());
 
 export type TGetItemsQueryParams = z.infer<typeof getItemsQuerySchema>;
+export type TSelectItemsQueryParams = z.infer<typeof selectItemsQuerySchema>;

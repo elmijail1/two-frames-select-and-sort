@@ -13,3 +13,9 @@ export type TFindItemsReturn = {
 	items: IItem[];
 	newLatestId: number | null;
 };
+
+export type TSelectItemsReturn = {
+	totalIds: number;
+	added: number[];
+	failed: number[];
+};
