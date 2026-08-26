@@ -9,6 +9,7 @@ import type { IItem } from "../App";
 import { Items } from "./Items";
 import { Filter } from "./Filter";
 import { useEffect, useRef, useState } from "react";
+import { useSelectQueue } from "../hooks/useSelectQueue";
 
 type TUnselectedQueryKey = readonly ["items", "unselected", string];
 
@@ -40,7 +41,6 @@ async function fetchUnselectedItems({
 export function FrameUnselectedProper() {
 	const sentinelRef = useRef<HTMLDivElement | null>(null);
 	const containerRef = useRef<HTMLElement | null>(null);
-	const selectedRef = useRef<Set<number>>(new Set());
 	const [filter, setFilter] = useState<string>("");
 	const [debouncedFilter, setDebouncedFilter] = useState<string>("");
 
@@ -87,9 +87,10 @@ export function FrameUnselectedProper() {
 		return () => observer.disconnect();
 	}, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
+	const { enqueueSelect } = useSelectQueue();
 	const queryClient = useQueryClient();
 	function handleSelection(id: number) {
-		selectedRef.current.add(id);
+		enqueueSelect(id);
 
 		queryClient.setQueryData(
 			queryKey,
