@@ -1,4 +1,10 @@
-import { keepPreviousData, useInfiniteQuery } from "@tanstack/react-query";
+import {
+	type Query,
+	type InfiniteData,
+	useQueryClient,
+	useInfiniteQuery,
+	keepPreviousData,
+} from "@tanstack/react-query";
 import type { IItem } from "../App";
 import { Items } from "./Items";
 import { Filter } from "./Filter";
@@ -34,6 +40,7 @@ async function fetchUnselectedItems({
 export function FrameUnselectedProper() {
 	const sentinelRef = useRef<HTMLDivElement | null>(null);
 	const containerRef = useRef<HTMLElement | null>(null);
+	const selectedRef = useRef<Set<number>>(new Set());
 	const [filter, setFilter] = useState<string>("");
 	const [debouncedFilter, setDebouncedFilter] = useState<string>("");
 
@@ -80,6 +87,54 @@ export function FrameUnselectedProper() {
 		return () => observer.disconnect();
 	}, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
+	const queryClient = useQueryClient();
+	function handleSelection(id: number) {
+		selectedRef.current.add(id);
+
+		queryClient.setQueryData(
+			queryKey,
+			(oldData: InfiniteData<IGetItemsResponse> | undefined) => {
+				if (!oldData) return undefined;
+				return {
+					...oldData,
+					pages: oldData.pages.map((page) => {
+						const hasItem = page?.items.some((item) => item.id === id);
+						return hasItem
+							? { ...page, items: page?.items.filter((item) => item.id !== id) }
+							: page;
+					}),
+				};
+			},
+		);
+
+		queryClient.setQueriesData(
+			{ queryKey: ["items", "selected"], type: "active" },
+			(oldData: InfiniteData<IGetItemsResponse> | undefined, query: Query) => {
+				if (!oldData) return undefined;
+				const filter = query?.queryKey[2] as string | undefined;
+				if (filter && !String(id).startsWith(filter)) {
+					return oldData;
+				}
+				if (oldData.pages.length === 0) {
+					return {
+						...oldData,
+						pages: [{ items: [{ id }], newLatestId: null }],
+						pageParams: [undefined],
+					};
+				}
+				const lastIndex = oldData.pages.length - 1;
+				return {
+					...oldData,
+					pages: oldData.pages.map((page, i) =>
+						i === lastIndex
+							? { ...page, items: [...page.items, { id }] }
+							: page,
+					),
+				};
+			},
+		);
+	}
+
 	if (isLoading) return <p>Loading...</p>;
 	if (isError) return <p>Failed to load items</p>;
 
@@ -97,7 +152,7 @@ export function FrameUnselectedProper() {
 			ref={containerRef}
 		>
 			<Filter filter={filter} setFilter={setFilter} />
-			<Items displayed={items} onSelect={(i) => console.log(i)} />
+			<Items displayed={items} onSelect={handleSelection} />
 			<div
 				ref={sentinelRef}
 				style={{
