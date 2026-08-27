@@ -1,14 +1,19 @@
 import { useRef } from "react";
+import {
+	ADD_INTERVAL_MS,
+	SELECT_INTERVAL_MS,
+} from "../configs/batchingIntervals";
+import { ADD_URL, SELECT_URL, UNSELECT_URL } from "../configs/urls";
 
 type TSelectType = "select" | "unselect";
 
-export function useSelectQueue(selectType: TSelectType) {
+function useBatchQueue(url: string, intervalMs: number) {
 	const queueRef = useRef<Set<number>>(new Set());
 	const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
 	function scheduleFlush() {
 		if (timeoutRef.current !== null) return;
-		timeoutRef.current = setTimeout(flush, 1000);
+		timeoutRef.current = setTimeout(flush, intervalMs);
 	}
 
 	async function flush() {
@@ -19,11 +24,6 @@ export function useSelectQueue(selectType: TSelectType) {
 		for (const id of idsToFlush) {
 			queueRef.current.delete(id);
 		}
-
-		const url =
-			selectType === "select"
-				? "/api/items/selected/batch"
-				: "/api/items/unselected/batch";
 
 		try {
 			const res = await fetch(url, {
@@ -47,4 +47,13 @@ export function useSelectQueue(selectType: TSelectType) {
 	}
 
 	return { enqueue };
+}
+
+export function useSelectQueue(selectType: TSelectType) {
+	const url = selectType === "select" ? SELECT_URL : UNSELECT_URL;
+	return useBatchQueue(url, SELECT_INTERVAL_MS);
+}
+
+export function useAddItemQueue() {
+	return useBatchQueue(ADD_URL, ADD_INTERVAL_MS);
 }

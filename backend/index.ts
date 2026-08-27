@@ -11,11 +11,11 @@ import {
 	validateGetItemsParams,
 } from "./src/middleware/validateGetItemsParams";
 import {
-	addItemQuerySchema,
+	addItemsQuerySchema,
 	selectItemsQuerySchema,
 	unselectItemsQuerySchema,
 } from "./src/schemas";
-import { addItem } from "./src/services/addItem";
+import { addItems } from "./src/services/addItems";
 import {
 	findSelectedItems,
 	findUnselectedItems,
@@ -82,13 +82,13 @@ apiRouter.post("/items/unselected/batch", (req, res) => {
 	res.json(result);
 });
 
-apiRouter.post("/items", (req, res) => {
-	const parsingResult = addItemQuerySchema.safeParse(req.body);
+apiRouter.post("/items/batch", (req, res) => {
+	const parsingResult = addItemsQuerySchema.safeParse(req.body);
 	if (!parsingResult.success) {
 		res.status(400).json({ error: parsingResult.error });
 		return;
 	}
-	const result = addItem(parsingResult.data);
+	const result = addItems(parsingResult.data);
 	res.json(result);
 });
 

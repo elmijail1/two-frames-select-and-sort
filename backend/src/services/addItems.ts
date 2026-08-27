@@ -5,10 +5,10 @@ import {
 	unselectedIdsOrder,
 	unselectedIdsUniqueValues,
 } from "../data";
-import type { TAddItemQueryParams } from "../schemas";
+import type { TAddItemsQueryParams } from "../schemas";
 import { findFirstIndexGreaterThan } from "./utilities";
 
-export function addItem({ id }: TAddItemQueryParams) {
+function addItem(id: number) {
 	if (
 		itemsById.get(id) ||
 		unselectedIdsUniqueValues.has(id) ||
@@ -26,4 +26,19 @@ export function addItem({ id }: TAddItemQueryParams) {
 	unselectedIdsOrder.splice(index, 0, id);
 	unselectedIdsUniqueValues.add(id);
 	return { id, index };
+}
+
+export function addItems(ids: TAddItemsQueryParams) {
+	const added: number[] = [];
+	const failed: number[] = [];
+	for (const id of ids) {
+		try {
+			addItem(id);
+			added.push(id);
+		} catch (error) {
+			console.error(error);
+			failed.push(id);
+		}
+	}
+	return { added, failed, totalIds: added.length + failed.length };
 }

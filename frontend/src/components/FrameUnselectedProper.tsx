@@ -1,14 +1,15 @@
 import {
-	useQueryClient,
-	useInfiniteQuery,
 	keepPreviousData,
+	useInfiniteQuery,
+	useQueryClient,
 } from "@tanstack/react-query";
-import { Items } from "./Items";
-import { Filter } from "./Filter";
 import { useEffect, useRef, useState } from "react";
-import { useSelectQueue } from "../hooks/useSelectQueue";
+import { handleAddition } from "../handlers/handleAddition";
 import { handleSelection } from "../handlers/handleSelection";
+import { useAddItemQueue, useSelectQueue } from "../hooks/useBatchQueue";
 import type { IGetItemsResponse } from "../types/apiTypes";
+import { Filter } from "./Filter";
+import { Items } from "./Items";
 
 export type TUnselectedQueryKey = readonly ["items", "unselected", string];
 
@@ -37,14 +38,17 @@ export function FrameUnselectedProper() {
 	const containerRef = useRef<HTMLElement | null>(null);
 	const [filter, setFilter] = useState<string>("");
 	const [debouncedFilter, setDebouncedFilter] = useState<string>("");
-	const [itemToAdd, setItemToAdd] = useState<string | undefined>();
-	const [errorItemToAdd, setErrorItemToAdd] = useState<string | undefined>();
+	const [itemToAdd, setItemToAdd] = useState<string>("");
+	const [errorItemToAdd, setErrorItemToAdd] = useState<string>("");
 
-	function addItem(id?: string) {
-		if (!id || id.trim().length === 0 || Number.isNaN(Number(id))) {
+	const { enqueue: enqueueAddItem } = useAddItemQueue();
+	function addItem(id: string) {
+		if (id.trim().length === 0 || Number.isNaN(Number(id))) {
 			setErrorItemToAdd("Please enter a valid number");
+			return;
 		}
-		// add to the server
+		handleAddition({ id: Number(id), enqueueAddItem, queryKey, queryClient });
+		setItemToAdd("");
 	}
 
 	useEffect(() => {
@@ -162,7 +166,7 @@ export function FrameUnselectedProper() {
 						}}
 					>
 						<p>{errorItemToAdd}</p>
-						<button type="button" onClick={() => setErrorItemToAdd(undefined)}>
+						<button type="button" onClick={() => setErrorItemToAdd("")}>
 							Ok
 						</button>
 					</div>

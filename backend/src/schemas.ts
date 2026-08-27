@@ -14,16 +14,11 @@ const basicSelectSchema = z.array(z.number());
 export const selectItemsQuerySchema = basicSelectSchema;
 export const unselectItemsQuerySchema = basicSelectSchema;
 
-export const addItemQuerySchema = z.object({
-	id: z.preprocess(
-		(val) => (val === "" ? undefined : val),
-		z.coerce.number().int(),
-	),
-});
+export const addItemsQuerySchema = z.array(z.number().int());
 
 export type TGetItemsQueryParams = z.infer<typeof getItemsQuerySchema>;
 export type TSelectItemsQueryParams = z.infer<typeof selectItemsQuerySchema>;
 export type TUnselectItemsQueryParams = z.infer<
 	typeof unselectItemsQuerySchema
 >;
-export type TAddItemQueryParams = z.infer<typeof addItemQuerySchema>;
+export type TAddItemsQueryParams = z.infer<typeof addItemsQuerySchema>;
