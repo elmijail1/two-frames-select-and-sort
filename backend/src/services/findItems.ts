@@ -89,6 +89,9 @@ export function findUnselectedItemsFiltered({
 	if (filter === 0) {
 		return handleZeroFilter(latestId);
 	}
+	if (filter === "-") {
+		return handleBareMinusFilter(limit, latestId);
+	}
 
 	const biggestIdUnselected = unselectedIdsOrder[unselectedIdsOrder.length - 1];
 	if (filter > biggestIdUnselected) {
@@ -140,4 +143,34 @@ function handleZeroFilter(latestId?: number) {
 		}
 	}
 	return { items: [], newLatestId: null };
+}
+
+function handleBareMinusFilter(limit: number, latestId?: number) {
+	const items: IItem[] = [];
+	const firstNonNegativeIndex = findFirstIndexGreaterThan(
+		unselectedIdsOrder,
+		-1,
+	);
+	let nextIndex = findFirstIndexGreaterThan(
+		unselectedIdsOrder,
+		latestId ?? -Infinity,
+	);
+
+	while (items.length < limit && nextIndex < firstNonNegativeIndex) {
+		const id = unselectedIdsOrder[nextIndex];
+		if (!unselectedIdsUniqueValues.has(id) || selectedIdsUniqueValues.has(id)) {
+			nextIndex++;
+			continue;
+		}
+		const item = itemsById.get(id);
+		if (!item) {
+			nextIndex++;
+			continue;
+		}
+		items.push(item);
+		nextIndex++;
+	}
+
+	const newLatestId = items.length ? items[items.length - 1].id : null;
+	return { items, newLatestId };
 }

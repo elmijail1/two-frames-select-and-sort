@@ -5,8 +5,8 @@ export interface IItem {
 }
 
 export type TFindItemsParams = Omit<TGetItemsQueryParams, "filter">;
-export type TFindItemsFilteredParams = TGetItemsQueryParams & {
-	filter: number;
+export type TFindItemsFilteredParams = Omit<TGetItemsQueryParams, "filter"> & {
+	filter: NonNullable<TGetItemsQueryParams["filter"]>;
 };
 
 export type TFindItemsReturn = {
