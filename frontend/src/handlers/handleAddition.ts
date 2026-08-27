@@ -20,11 +20,29 @@ export function handleAddition({
 	const filter = queryKey[2];
 	if (filter && !String(id).startsWith(filter)) return;
 
+	const selectedMatches = queryClient.getQueriesData<
+		InfiniteData<IGetItemsResponse>
+	>({
+		queryKey: ["items", "selected"],
+		type: "active",
+	});
+	if (selectedMatches.some(([_key, data]) => itemExistsInCache(data, id)))
+		return;
+
 	queryClient.setQueryData(
 		queryKey,
 		(oldData: InfiniteData<IGetItemsResponse> | undefined) => {
 			if (!oldData) return undefined;
+			if (itemExistsInCache(oldData, id)) return oldData;
 			return insertItemSorted(oldData, id);
 		},
 	);
+}
+
+function itemExistsInCache(
+	data: InfiniteData<IGetItemsResponse> | undefined,
+	id: number,
+): boolean {
+	if (!data) return false;
+	return data.pages.some((page) => page.items.some((item) => item.id === id));
 }
