@@ -101,7 +101,7 @@ app.use(
 		res: Response,
 		_next: NextFunction,
 	) => {
-		res.status(err.status ?? 500).json({ err });
+		res.status(err.status ?? 500).json({ error: err.message });
 	},
 );
 

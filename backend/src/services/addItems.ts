@@ -14,7 +14,7 @@ function addItem(id: number) {
 		unselectedIdsUniqueValues.has(id) ||
 		selectedIdsUniqueValues.has(id)
 	) {
-		throw createError(409, { message: `Item already exists`, data: { id } });
+		throw createError(409, "Item already exists", { data: { id } });
 	}
 	itemsById.set(id, { id });
 	if (id > unselectedIdsOrder[unselectedIdsOrder.length - 1]) {
