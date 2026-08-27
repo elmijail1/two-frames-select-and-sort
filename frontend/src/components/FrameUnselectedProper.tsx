@@ -41,16 +41,6 @@ export function FrameUnselectedProper() {
 	const [itemToAdd, setItemToAdd] = useState<string>("");
 	const [errorItemToAdd, setErrorItemToAdd] = useState<string>("");
 
-	const { enqueue: enqueueAddItem } = useAddItemQueue();
-	function addItem(id: string) {
-		if (id.trim().length === 0 || Number.isNaN(Number(id))) {
-			setErrorItemToAdd("Please enter a valid number");
-			return;
-		}
-		handleAddition({ id: Number(id), enqueueAddItem, queryKey, queryClient });
-		setItemToAdd("");
-	}
-
 	useEffect(() => {
 		const id = setTimeout(() => setDebouncedFilter(filter), 500);
 		return () => clearTimeout(id);
@@ -96,6 +86,16 @@ export function FrameUnselectedProper() {
 
 	const { enqueue: enqueueSelect } = useSelectQueue("select");
 	const queryClient = useQueryClient();
+
+	const { enqueue: enqueueAddItem } = useAddItemQueue();
+	function addItem(id: string) {
+		if (id.trim().length === 0 || Number.isNaN(Number(id))) {
+			setErrorItemToAdd("Please enter a valid number");
+			return;
+		}
+		handleAddition({ id: Number(id), enqueueAddItem, queryKey, queryClient });
+		setItemToAdd("");
+	}
 
 	if (isLoading) return <p>Loading...</p>;
 	if (isError) return <p>Failed to load items</p>;

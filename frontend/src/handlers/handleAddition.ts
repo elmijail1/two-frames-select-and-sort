@@ -17,6 +17,8 @@ export function handleAddition({
 	queryClient,
 }: IHandleAdditionProps) {
 	enqueueAddItem(id);
+	const filter = queryKey[2];
+	if (filter && !String(id).startsWith(filter)) return;
 
 	queryClient.setQueryData(
 		queryKey,
