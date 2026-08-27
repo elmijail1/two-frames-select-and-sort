@@ -1,19 +1,20 @@
-import { keepPreviousData, useInfiniteQuery } from "@tanstack/react-query";
-import type { IItem } from "../App";
+import {
+	keepPreviousData,
+	useInfiniteQuery,
+	useQueryClient,
+} from "@tanstack/react-query";
 import { Items } from "./Items";
 import { Filter } from "./Filter";
 import { useEffect, useRef, useState } from "react";
+import { useSelectQueue } from "../hooks/useSelectQueue";
+import { handleUnselection } from "../handlers/handleUnselection";
+import type { IGetItemsResponse } from "../types/apiTypes";
 
-type TSelectedQueryKey = readonly ["items", "selected", string];
+export type TSelectedQueryKey = readonly ["items", "selected", string];
 
 interface IGetItemsParams {
 	pageParam?: number;
 	queryKey: TSelectedQueryKey;
-}
-
-interface IGetItemsResponse {
-	items: IItem[];
-	newLatestId: number | null;
 }
 
 async function fetchSelectedItems({
@@ -59,27 +60,13 @@ export function FrameSelectedProper() {
 		placeholderData: keepPreviousData,
 	});
 	const items = data?.pages.flatMap((page) => page.items) ?? [];
-	console.log("items: ", items);
 
 	useEffect(() => {
-		console.log("we ever get here?");
 		const sentinel = sentinelRef.current;
 		const container = containerRef.current;
 		if (!sentinel) return;
-		let callCounter = 0;
 		const observer = new IntersectionObserver(
 			([entry]) => {
-				callCounter++;
-				console.log(
-					"callCounter: ",
-					callCounter,
-					"\n entry.isIntersecting: ",
-					entry.isIntersecting,
-					"\n hasNextPage: ",
-					hasNextPage,
-					"\n isFetchingNextPage: ",
-					isFetchingNextPage,
-				);
 				if (entry.isIntersecting && hasNextPage && !isFetchingNextPage) {
 					fetchNextPage();
 				}
@@ -89,6 +76,9 @@ export function FrameSelectedProper() {
 		observer.observe(sentinel);
 		return () => observer.disconnect();
 	}, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+
+	const { enqueue: enqueueUnselect } = useSelectQueue("unselect");
+	const queryClient = useQueryClient();
 
 	if (isLoading) return <p>Loading...</p>;
 	if (isError) return <p>Failed to load items</p>;
@@ -107,7 +97,12 @@ export function FrameSelectedProper() {
 			ref={containerRef}
 		>
 			<Filter filter={filter} setFilter={setFilter} />
-			<Items displayed={items} onSelect={(i) => console.log(i)} />
+			<Items
+				displayed={items}
+				onSelect={(id) =>
+					handleUnselection({ id, enqueueUnselect, queryKey, queryClient })
+				}
+			/>
 			<div
 				ref={sentinelRef}
 				style={{
