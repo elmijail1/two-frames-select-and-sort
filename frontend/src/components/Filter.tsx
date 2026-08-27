@@ -8,12 +8,12 @@ interface IFilterProps {
 
 export function Filter({ filter, setFilter }: IFilterProps) {
 	return (
-		<div>
-			<input
-				type="text"
-				value={filter}
-				onChange={(e) => setFilter(e.target.value)}
-			/>
-		</div>
+		<input
+			style={{ maxWidth: "5rem" }}
+			type="text"
+			placeholder="Filter by ID"
+			value={filter}
+			onChange={(e) => setFilter(e.target.value)}
+		/>
 	);
 }

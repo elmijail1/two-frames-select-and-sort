@@ -3,12 +3,12 @@ import {
 	useInfiniteQuery,
 	useQueryClient,
 } from "@tanstack/react-query";
-import { Items } from "./Items";
-import { Filter } from "./Filter";
 import { useEffect, useRef, useState } from "react";
-import { useSelectQueue } from "../hooks/useSelectQueue";
 import { handleUnselection } from "../handlers/handleUnselection";
+import { useSelectQueue } from "../hooks/useBatchQueue";
 import type { IGetItemsResponse } from "../types/apiTypes";
+import { Filter } from "./Filter";
+import { Items } from "./Items";
 
 export type TSelectedQueryKey = readonly ["items", "selected", string];
 

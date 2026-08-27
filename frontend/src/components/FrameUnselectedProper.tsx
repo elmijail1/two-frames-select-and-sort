@@ -1,14 +1,15 @@
 import {
-	useQueryClient,
-	useInfiniteQuery,
 	keepPreviousData,
+	useInfiniteQuery,
+	useQueryClient,
 } from "@tanstack/react-query";
-import { Items } from "./Items";
-import { Filter } from "./Filter";
 import { useEffect, useRef, useState } from "react";
-import { useSelectQueue } from "../hooks/useSelectQueue";
+import { handleAddition } from "../handlers/handleAddition";
 import { handleSelection } from "../handlers/handleSelection";
+import { useAddItemQueue, useSelectQueue } from "../hooks/useBatchQueue";
 import type { IGetItemsResponse } from "../types/apiTypes";
+import { Filter } from "./Filter";
+import { Items } from "./Items";
 
 export type TUnselectedQueryKey = readonly ["items", "unselected", string];
 
@@ -37,6 +38,8 @@ export function FrameUnselectedProper() {
 	const containerRef = useRef<HTMLElement | null>(null);
 	const [filter, setFilter] = useState<string>("");
 	const [debouncedFilter, setDebouncedFilter] = useState<string>("");
+	const [itemToAdd, setItemToAdd] = useState<string>("");
+	const [errorItemToAdd, setErrorItemToAdd] = useState<string>("");
 
 	useEffect(() => {
 		const id = setTimeout(() => setDebouncedFilter(filter), 500);
@@ -84,6 +87,16 @@ export function FrameUnselectedProper() {
 	const { enqueue: enqueueSelect } = useSelectQueue("select");
 	const queryClient = useQueryClient();
 
+	const { enqueue: enqueueAddItem } = useAddItemQueue();
+	function addItem(id: string) {
+		if (id.trim().length === 0 || Number.isNaN(Number(id))) {
+			setErrorItemToAdd("Please enter a valid number");
+			return;
+		}
+		handleAddition({ id: Number(id), enqueueAddItem, queryKey, queryClient });
+		setItemToAdd("");
+	}
+
 	if (isLoading) return <p>Loading...</p>;
 	if (isError) return <p>Failed to load items</p>;
 
@@ -97,10 +110,30 @@ export function FrameUnselectedProper() {
 				display: "flex",
 				flexDirection: "column",
 				gap: "1rem",
+				position: "relative",
+				zIndex: "1",
 			}}
 			ref={containerRef}
 		>
-			<Filter filter={filter} setFilter={setFilter} />
+			<div style={{ display: "flex", justifyContent: "space-between" }}>
+				<Filter filter={filter} setFilter={setFilter} />
+				<div
+					style={{
+						display: "flex",
+					}}
+				>
+					<input
+						type="text"
+						placeholder="New ID"
+						style={{ maxWidth: "4rem" }}
+						value={itemToAdd}
+						onChange={(e) => setItemToAdd(e.target.value)}
+					/>
+					<button type="button" onClick={() => addItem(itemToAdd)}>
+						Add
+					</button>
+				</div>
+			</div>
 			<Items
 				displayed={items}
 				onSelect={(id) =>
@@ -114,6 +147,31 @@ export function FrameUnselectedProper() {
 					flexShrink: 0,
 				}}
 			></div>
+			{errorItemToAdd && (
+				<div
+					style={{
+						position: "absolute",
+						width: "100%",
+						height: "100%",
+						display: "flex",
+						justifyContent: "center",
+						alignItems: "center",
+					}}
+				>
+					<div
+						style={{
+							backgroundColor: "hsl(0, 900%, 80%)",
+							borderRadius: "0.7rem",
+							padding: "0.5rem",
+						}}
+					>
+						<p>{errorItemToAdd}</p>
+						<button type="button" onClick={() => setErrorItemToAdd("")}>
+							Ok
+						</button>
+					</div>
+				</div>
+			)}
 		</section>
 	);
 }
