@@ -92,6 +92,9 @@ export function findUnselectedItemsFiltered({
 	if (filter === "-") {
 		return handleBareMinusFilter(limit, latestId);
 	}
+	if (filter < 0) {
+		return handleNegativeFilter(filter, limit, latestId);
+	}
 
 	const biggestIdUnselected = unselectedIdsOrder[unselectedIdsOrder.length - 1];
 	if (filter > biggestIdUnselected) {
@@ -171,6 +174,53 @@ function handleBareMinusFilter(limit: number, latestId?: number) {
 		nextIndex++;
 	}
 
+	const newLatestId = items.length ? items[items.length - 1].id : null;
+	return { items, newLatestId };
+}
+
+function handleNegativeFilter(
+	filter: number,
+	limit: number,
+	latestId?: number,
+) {
+	const items: IItem[] = [];
+	const lowestIdUnselected = unselectedIdsOrder[0];
+	if (filter < lowestIdUnselected) {
+		return { items: [], newLatestId: null };
+	}
+
+	let maxD = 0;
+	while (filter * 10 ** (maxD + 1) >= lowestIdUnselected) {
+		maxD++;
+	}
+
+	let d = maxD;
+	if (latestId !== undefined) {
+		while (d > 0 && filter * 10 ** d <= latestId) {
+			d--;
+		}
+	}
+
+	let id = 0;
+	while (items.length < limit && d >= 0) {
+		const blockSize = 10 ** d;
+		const blockEnd = filter * blockSize;
+		const blockStart = blockEnd - blockSize + 1;
+
+		for (id = blockStart; id <= blockEnd && items.length < limit; id++) {
+			if (latestId !== undefined && id <= latestId) continue;
+			if (
+				!unselectedIdsUniqueValues.has(id) ||
+				selectedIdsUniqueValues.has(id)
+			) {
+				continue;
+			}
+			const newItem = itemsById.get(id);
+			if (!newItem) continue;
+			items.push(newItem);
+		}
+		d--;
+	}
 	const newLatestId = items.length ? items[items.length - 1].id : null;
 	return { items, newLatestId };
 }
