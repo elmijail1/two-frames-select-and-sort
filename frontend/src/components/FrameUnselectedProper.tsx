@@ -97,10 +97,26 @@ export function FrameUnselectedProper() {
 				display: "flex",
 				flexDirection: "column",
 				gap: "1rem",
+				position: "relative",
+				zIndex: "1",
 			}}
 			ref={containerRef}
 		>
-			<Filter filter={filter} setFilter={setFilter} />
+			<div style={{ display: "flex", justifyContent: "space-between" }}>
+				<Filter filter={filter} setFilter={setFilter} />
+				<div
+					style={{
+						display: "flex",
+					}}
+				>
+					<input
+						type="text"
+						placeholder="New ID"
+						style={{ maxWidth: "4rem" }}
+					/>
+					<button type="button">Add</button>
+				</div>
+			</div>
 			<Items
 				displayed={items}
 				onSelect={(id) =>
