@@ -37,6 +37,15 @@ export function FrameUnselectedProper() {
 	const containerRef = useRef<HTMLElement | null>(null);
 	const [filter, setFilter] = useState<string>("");
 	const [debouncedFilter, setDebouncedFilter] = useState<string>("");
+	const [itemToAdd, setItemToAdd] = useState<string | undefined>();
+	const [errorItemToAdd, setErrorItemToAdd] = useState<string | undefined>();
+
+	function addItem(id?: string) {
+		if (!id || id.trim().length === 0 || Number.isNaN(Number(id))) {
+			setErrorItemToAdd("Please enter a valid number");
+		}
+		// add to the server
+	}
 
 	useEffect(() => {
 		const id = setTimeout(() => setDebouncedFilter(filter), 500);
@@ -113,8 +122,12 @@ export function FrameUnselectedProper() {
 						type="text"
 						placeholder="New ID"
 						style={{ maxWidth: "4rem" }}
+						value={itemToAdd}
+						onChange={(e) => setItemToAdd(e.target.value)}
 					/>
-					<button type="button">Add</button>
+					<button type="button" onClick={() => addItem(itemToAdd)}>
+						Add
+					</button>
 				</div>
 			</div>
 			<Items
@@ -130,6 +143,31 @@ export function FrameUnselectedProper() {
 					flexShrink: 0,
 				}}
 			></div>
+			{errorItemToAdd && (
+				<div
+					style={{
+						position: "absolute",
+						width: "100%",
+						height: "100%",
+						display: "flex",
+						justifyContent: "center",
+						alignItems: "center",
+					}}
+				>
+					<div
+						style={{
+							backgroundColor: "hsl(0, 900%, 80%)",
+							borderRadius: "0.7rem",
+							padding: "0.5rem",
+						}}
+					>
+						<p>{errorItemToAdd}</p>
+						<button type="button" onClick={() => setErrorItemToAdd(undefined)}>
+							Ok
+						</button>
+					</div>
+				</div>
+			)}
 		</section>
 	);
 }
