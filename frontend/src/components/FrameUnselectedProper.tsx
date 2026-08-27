@@ -11,14 +11,14 @@ import { Filter } from "./Filter";
 import { useEffect, useRef, useState } from "react";
 import { useSelectQueue } from "../hooks/useSelectQueue";
 
-type TUnselectedQueryKey = readonly ["items", "unselected", string];
+export type TUnselectedQueryKey = readonly ["items", "unselected", string];
 
 interface IGetItemsParams {
 	pageParam?: number;
 	queryKey: TUnselectedQueryKey;
 }
 
-interface IGetItemsResponse {
+export interface IGetItemsResponse {
 	items: IItem[];
 	newLatestId: number | null;
 }
@@ -87,7 +87,7 @@ export function FrameUnselectedProper() {
 		return () => observer.disconnect();
 	}, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
-	const { enqueueSelect } = useSelectQueue();
+	const { enqueue: enqueueSelect } = useSelectQueue("select");
 	const queryClient = useQueryClient();
 	function handleSelection(id: number) {
 		enqueueSelect(id);
@@ -108,32 +108,41 @@ export function FrameUnselectedProper() {
 			},
 		);
 
-		queryClient.setQueriesData(
-			{ queryKey: ["items", "selected"], type: "active" },
-			(oldData: InfiniteData<IGetItemsResponse> | undefined, query: Query) => {
-				if (!oldData) return undefined;
-				const filter = query?.queryKey[2] as string | undefined;
-				if (filter && !String(id).startsWith(filter)) {
-					return oldData;
-				}
-				if (oldData.pages.length === 0) {
-					return {
-						...oldData,
-						pages: [{ items: [{ id }], newLatestId: null }],
-						pageParams: [undefined],
-					};
-				}
-				const lastIndex = oldData.pages.length - 1;
-				return {
-					...oldData,
-					pages: oldData.pages.map((page, i) =>
-						i === lastIndex
-							? { ...page, items: [...page.items, { id }] }
-							: page,
-					),
-				};
+		const matches = queryClient.getQueriesData<InfiniteData<IGetItemsResponse>>(
+			{
+				queryKey: ["items", "selected"],
+				type: "active",
 			},
 		);
+
+		for (const [key, oldData] of matches) {
+			if (!oldData) continue;
+			const filter = key[2] as string | undefined;
+			if (filter && !String(id).startsWith(filter)) {
+				continue;
+			}
+			if (oldData.pages.length === 0) {
+				queryClient.setQueryData(key, {
+					...oldData,
+					pages: [{ items: [{ id }], newLatestId: null }],
+					pageParams: [undefined],
+				});
+				continue;
+			}
+			const lastIndex = oldData.pages.length - 1;
+			queryClient.setQueryData(key, {
+				...oldData,
+				pages: oldData.pages.map((page, i) =>
+					i === lastIndex ? { ...page, items: [...page.items, { id }] } : page,
+				),
+			});
+			return {
+				...oldData,
+				pages: oldData.pages.map((page, i) =>
+					i === lastIndex ? { ...page, items: [...page.items, { id }] } : page,
+				),
+			};
+		}
 	}
 
 	if (isLoading) return <p>Loading...</p>;

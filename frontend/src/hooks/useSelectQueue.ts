@@ -1,6 +1,8 @@
 import { useRef } from "react";
 
-export function useSelectQueue() {
+type TSelectType = "select" | "unselect";
+
+export function useSelectQueue(selectType: TSelectType) {
 	const queueRef = useRef<Set<number>>(new Set());
 	const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -18,14 +20,18 @@ export function useSelectQueue() {
 			queueRef.current.delete(id);
 		}
 
+		const url =
+			selectType === "select"
+				? "/api/items/selected/batch"
+				: "/api/items/unselected/batch";
+
 		try {
-			const res = await fetch("/api/items/selected/batch", {
+			const res = await fetch(url, {
 				method: "POST",
-				headers: { "Content-Type": "application/json " },
+				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify(idsToFlush),
 			});
 			if (!res.ok) throw new Error("Failed to flush selection batch");
-			// TODO: reconcile added / failed from the res against the optimistic cache
 		} catch (error) {
 			console.error(error);
 		} finally {
@@ -35,10 +41,10 @@ export function useSelectQueue() {
 		}
 	}
 
-	function enqueueSelect(id: number) {
+	function enqueue(id: number) {
 		queueRef.current.add(id);
 		scheduleFlush();
 	}
 
-	return { enqueueSelect };
+	return { enqueue };
 }

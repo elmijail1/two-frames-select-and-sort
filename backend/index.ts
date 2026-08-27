@@ -9,8 +9,11 @@ import {
 	hasItemsQuery,
 	validateGetItemsParams,
 } from "./src/middleware/validateGetItemsParams";
-import { selectItems } from "./src/services/selectItems";
-import { selectItemsQuerySchema } from "./src/schemas";
+import { selectItems, unselectItems } from "./src/services/selectItems";
+import {
+	selectItemsQuerySchema,
+	unselectItemsQuerySchema,
+} from "./src/schemas";
 
 seedData();
 
@@ -58,6 +61,16 @@ apiRouter.post("/items/selected/batch", (req, res) => {
 		return;
 	}
 	const result = selectItems(parsingResult.data);
+	res.json(result);
+});
+
+apiRouter.post("/items/unselected/batch", (req, res) => {
+	const parsingResult = unselectItemsQuerySchema.safeParse(req.body);
+	if (!parsingResult.success) {
+		res.status(400).json({ error: parsingResult.error });
+		return;
+	}
+	const result = unselectItems(parsingResult.data);
 	res.json(result);
 });
 
