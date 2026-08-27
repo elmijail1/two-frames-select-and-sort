@@ -1,19 +1,27 @@
-import express, { Router, type Express } from "express";
+import express, {
+	type Express,
+	type NextFunction,
+	type Request,
+	type Response,
+	Router,
+} from "express";
 import { itemsById, seedData } from "./src/data";
+import {
+	hasItemsQuery,
+	validateGetItemsParams,
+} from "./src/middleware/validateGetItemsParams";
+import {
+	addItemQuerySchema,
+	selectItemsQuerySchema,
+	unselectItemsQuerySchema,
+} from "./src/schemas";
+import { addItem } from "./src/services/addItem";
 import {
 	findSelectedItems,
 	findUnselectedItems,
 	findUnselectedItemsFiltered,
 } from "./src/services/findItems";
-import {
-	hasItemsQuery,
-	validateGetItemsParams,
-} from "./src/middleware/validateGetItemsParams";
 import { selectItems, unselectItems } from "./src/services/selectItems";
-import {
-	selectItemsQuerySchema,
-	unselectItemsQuerySchema,
-} from "./src/schemas";
 
 seedData();
 
@@ -74,7 +82,28 @@ apiRouter.post("/items/unselected/batch", (req, res) => {
 	res.json(result);
 });
 
+apiRouter.post("/items", (req, res) => {
+	const parsingResult = addItemQuerySchema.safeParse(req.body);
+	if (!parsingResult.success) {
+		res.status(400).json({ error: parsingResult.error });
+		return;
+	}
+	const result = addItem(parsingResult.data);
+	res.json(result);
+});
+
 app.use("/api", apiRouter);
+
+app.use(
+	(
+		err: Error & { status?: number },
+		_req: Request,
+		res: Response,
+		_next: NextFunction,
+	) => {
+		res.status(err.status ?? 500).json({ err });
+	},
+);
 
 app.listen(PORT, () => {
 	console.log(`Server listening on http://localhost:${PORT}`);
