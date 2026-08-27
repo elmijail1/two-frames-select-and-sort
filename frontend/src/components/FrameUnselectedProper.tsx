@@ -1,26 +1,20 @@
 import {
-	type Query,
-	type InfiniteData,
 	useQueryClient,
 	useInfiniteQuery,
 	keepPreviousData,
 } from "@tanstack/react-query";
-import type { IItem } from "../App";
 import { Items } from "./Items";
 import { Filter } from "./Filter";
 import { useEffect, useRef, useState } from "react";
 import { useSelectQueue } from "../hooks/useSelectQueue";
+import { handleSelection } from "../handlers/handleSelection";
+import type { IGetItemsResponse } from "../types/apiTypes";
 
 export type TUnselectedQueryKey = readonly ["items", "unselected", string];
 
 interface IGetItemsParams {
 	pageParam?: number;
 	queryKey: TUnselectedQueryKey;
-}
-
-export interface IGetItemsResponse {
-	items: IItem[];
-	newLatestId: number | null;
 }
 
 async function fetchUnselectedItems({
@@ -89,61 +83,6 @@ export function FrameUnselectedProper() {
 
 	const { enqueue: enqueueSelect } = useSelectQueue("select");
 	const queryClient = useQueryClient();
-	function handleSelection(id: number) {
-		enqueueSelect(id);
-
-		queryClient.setQueryData(
-			queryKey,
-			(oldData: InfiniteData<IGetItemsResponse> | undefined) => {
-				if (!oldData) return undefined;
-				return {
-					...oldData,
-					pages: oldData.pages.map((page) => {
-						const hasItem = page?.items.some((item) => item.id === id);
-						return hasItem
-							? { ...page, items: page?.items.filter((item) => item.id !== id) }
-							: page;
-					}),
-				};
-			},
-		);
-
-		const matches = queryClient.getQueriesData<InfiniteData<IGetItemsResponse>>(
-			{
-				queryKey: ["items", "selected"],
-				type: "active",
-			},
-		);
-
-		for (const [key, oldData] of matches) {
-			if (!oldData) continue;
-			const filter = key[2] as string | undefined;
-			if (filter && !String(id).startsWith(filter)) {
-				continue;
-			}
-			if (oldData.pages.length === 0) {
-				queryClient.setQueryData(key, {
-					...oldData,
-					pages: [{ items: [{ id }], newLatestId: null }],
-					pageParams: [undefined],
-				});
-				continue;
-			}
-			const lastIndex = oldData.pages.length - 1;
-			queryClient.setQueryData(key, {
-				...oldData,
-				pages: oldData.pages.map((page, i) =>
-					i === lastIndex ? { ...page, items: [...page.items, { id }] } : page,
-				),
-			});
-			return {
-				...oldData,
-				pages: oldData.pages.map((page, i) =>
-					i === lastIndex ? { ...page, items: [...page.items, { id }] } : page,
-				),
-			};
-		}
-	}
 
 	if (isLoading) return <p>Loading...</p>;
 	if (isError) return <p>Failed to load items</p>;
@@ -162,7 +101,12 @@ export function FrameUnselectedProper() {
 			ref={containerRef}
 		>
 			<Filter filter={filter} setFilter={setFilter} />
-			<Items displayed={items} onSelect={handleSelection} />
+			<Items
+				displayed={items}
+				onSelect={(id) =>
+					handleSelection({ id, queryClient, queryKey, enqueueSelect })
+				}
+			/>
 			<div
 				ref={sentinelRef}
 				style={{
