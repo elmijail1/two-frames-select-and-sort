@@ -4,15 +4,15 @@ import {
 	useInfiniteQuery,
 	useQueryClient,
 } from "@tanstack/react-query";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { handleReorder } from "../handlers/handleReorder";
 import { handleUnselection } from "../handlers/handleUnselection";
 import { useSelectQueue } from "../hooks/useBatchQueue";
 import { useReorderQueue } from "../hooks/useReorderQueue";
 import type { IGetItemsResponse } from "../types/apiTypes";
 import { Filter } from "./Filter";
-import { Items } from "./Items";
 import { Frame } from "./Frame";
+import { Items } from "./Items";
 
 export type TSelectedQueryKey = readonly ["items", "selected", string];
 
@@ -72,7 +72,10 @@ export function FrameSelected() {
 		getNextPageParam: (lastPage) => lastPage.newLatestId ?? undefined,
 		placeholderData: keepPreviousData,
 	});
-	const items = data?.pages.flatMap((page) => page.items) ?? [];
+	const items = useMemo(
+		() => data?.pages.flatMap((page) => page.items) ?? [],
+		[data],
+	);
 
 	useEffect(() => {
 		const sentinel = sentinelRef.current;
@@ -148,6 +151,7 @@ export function FrameSelected() {
 						handleUnselection({ id, enqueueUnselect, queryKey, queryClient })
 					}
 					sorted={true}
+					containerRef={containerRef}
 				/>
 				<div
 					ref={sentinelRef}
