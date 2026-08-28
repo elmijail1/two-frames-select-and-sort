@@ -27,10 +27,19 @@ export function selectItems(ids: TSelectItemsQueryParams): TSelectItemsReturn {
 		}
 		unselectedIdsUniqueValues.delete(id);
 		selectedIdsUniqueValues.add(id);
-		const ind = findFirstIndexGreaterThan(unselectedIdsOrder, id) - 1;
-		unselectedIdsOrder.splice(ind, 1);
 		selectedIdsOrder.push(id);
 		added.push(id);
+	}
+
+	if (added.length > 0) {
+		let writeIndex = 0;
+		for (let i = 0; i < unselectedIdsOrder.length; i++) {
+			const currentId = unselectedIdsOrder[i];
+			if (!unselectedIdsUniqueValues.has(currentId)) continue;
+			unselectedIdsOrder[writeIndex] = currentId;
+			writeIndex++;
+		}
+		unselectedIdsOrder.length = writeIndex;
 	}
 	return { added, failed, totalIds: added.length + failed.length };
 }

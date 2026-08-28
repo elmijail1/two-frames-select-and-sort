@@ -142,8 +142,6 @@ export function FrameUnselected() {
 				style={{
 					height: "1rem",
 					flexShrink: 0,
-					backgroundColor: "yellow",
-					width: "1rem",
 				}}
 			></div>
 			{errorItemToAdd && (
