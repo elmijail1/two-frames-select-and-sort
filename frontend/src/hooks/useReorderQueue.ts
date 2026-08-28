@@ -33,7 +33,7 @@ export function useReorderQueue() {
 		} catch (error) {
 			console.error(error);
 		} finally {
-			if (queueRef.current.size > 0) scheduleFlush;
+			if (queueRef.current.size > 0) scheduleFlush();
 		}
 	}
 
