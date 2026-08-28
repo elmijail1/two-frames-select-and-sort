@@ -31,7 +31,11 @@ export function selectItems(ids: TSelectItemsQueryParams): TSelectItemsReturn {
 		added.push(id);
 	}
 
-	if (added.length > 0) {
+	if (added.length === 1) {
+		const id = added[0];
+		const ind = findFirstIndexGreaterThan(unselectedIdsOrder, id) - 1;
+		unselectedIdsOrder.splice(ind, 1);
+	} else if (added.length > 1) {
 		let writeIndex = 0;
 		for (let i = 0; i < unselectedIdsOrder.length; i++) {
 			const currentId = unselectedIdsOrder[i];
@@ -41,6 +45,7 @@ export function selectItems(ids: TSelectItemsQueryParams): TSelectItemsReturn {
 		}
 		unselectedIdsOrder.length = writeIndex;
 	}
+
 	return { added, failed, totalIds: added.length + failed.length };
 }
 
