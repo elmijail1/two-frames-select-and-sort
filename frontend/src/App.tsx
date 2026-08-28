@@ -1,9 +1,10 @@
-import { FrameSorted } from "./components/FrameSorted";
-import { FrameUnsorted } from "./components/FrameUnsorted";
-import "./App.css";
 import { useState } from "react";
-import { FrameUnselectedProper } from "./components/FrameUnselectedProper";
+import "./App.css";
 import { FrameSelectedProper } from "./components/FrameSelectedProper";
+import { FrameSorted } from "./components/FrameSorted";
+import { FrameUnselectedProper } from "./components/FrameUnselectedProper";
+import { FrameUnsorted } from "./components/FrameUnsorted";
+import type { TSide } from "./types/genTypes";
 
 export interface IItem {
 	id: number;
@@ -39,11 +40,7 @@ function App() {
 			),
 		);
 	}
-	function reorderSelected(
-		id: number,
-		neighbourId: number,
-		side: "before" | "after",
-	) {
+	function reorderSelected(id: number, neighbourId: number, side: TSide) {
 		setSelected((prev) => {
 			const fromIndex = prev.findIndex((i) => i.id === id);
 			if (fromIndex === -1) return prev;
