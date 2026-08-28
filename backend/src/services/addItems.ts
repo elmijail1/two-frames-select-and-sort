@@ -6,9 +6,35 @@ import {
 	unselectedIdsUniqueValues,
 } from "../data";
 import type { TAddItemsQueryParams } from "../schemas";
-import { findFirstIndexGreaterThan } from "./utilities";
+import { findFirstIndexGreaterThan, mergeSortedInsert } from "./utilities";
 
-function addItem(id: number) {
+export function addItems(ids: TAddItemsQueryParams) {
+	const added: number[] = [];
+	const failed: number[] = [];
+	for (const id of ids) {
+		try {
+			validateAndRegisterItem(id);
+			added.push(id);
+		} catch (error) {
+			console.error(error);
+			failed.push(id);
+		}
+	}
+
+	if (added.length > 3) {
+		mergeSortedInsert(unselectedIdsOrder, added);
+	} else {
+		for (let i = 0; i < added.length; i++) {
+			const id = added[i];
+			const ind = findFirstIndexGreaterThan(unselectedIdsOrder, id);
+			unselectedIdsOrder.splice(ind, 0, id);
+		}
+	}
+
+	return { added, failed, totalIds: added.length + failed.length };
+}
+
+function validateAndRegisterItem(id: number): void {
 	if (
 		itemsById.get(id) ||
 		unselectedIdsUniqueValues.has(id) ||
@@ -17,28 +43,5 @@ function addItem(id: number) {
 		throw createError(409, "Item already exists", { data: { id } });
 	}
 	itemsById.set(id, { id });
-	if (id > unselectedIdsOrder[unselectedIdsOrder.length - 1]) {
-		unselectedIdsOrder.push(id);
-		unselectedIdsUniqueValues.add(id);
-		return { id, index: unselectedIdsOrder.length - 1 };
-	}
-	const index = findFirstIndexGreaterThan(unselectedIdsOrder, id);
-	unselectedIdsOrder.splice(index, 0, id);
 	unselectedIdsUniqueValues.add(id);
-	return { id, index };
-}
-
-export function addItems(ids: TAddItemsQueryParams) {
-	const added: number[] = [];
-	const failed: number[] = [];
-	for (const id of ids) {
-		try {
-			addItem(id);
-			added.push(id);
-		} catch (error) {
-			console.error(error);
-			failed.push(id);
-		}
-	}
-	return { added, failed, totalIds: added.length + failed.length };
 }

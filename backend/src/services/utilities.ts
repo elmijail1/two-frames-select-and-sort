@@ -18,3 +18,28 @@ export function findFirstIndexGreaterThan(
 
 	return low;
 }
+
+export function mergeSortedInsert(
+	sortedArray: number[],
+	newIds: number[],
+): void {
+	const newSorted = [...newIds].sort((a, b) => a - b);
+	const merged: number[] = [];
+
+	let i = 0; // sorted array existing
+	let n = 0; // new items
+
+	while (i < sortedArray.length && n < newSorted.length) {
+		if (sortedArray[i] <= newSorted[n]) {
+			merged.push(sortedArray[i++]);
+		} else {
+			merged.push(newSorted[n++]);
+		}
+	}
+	while (i < sortedArray.length) merged.push(sortedArray[i++]);
+	while (n < newSorted.length) merged.push(newSorted[n++]);
+
+	for (let m = 0; m < merged.length; m++) {
+		sortedArray[m] = merged[m];
+	}
+}
