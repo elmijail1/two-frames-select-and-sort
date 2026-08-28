@@ -10,6 +10,7 @@ import { useAddItemQueue, useSelectQueue } from "../hooks/useBatchQueue";
 import type { IGetItemsResponse } from "../types/apiTypes";
 import { Filter } from "./Filter";
 import { Items } from "./Items";
+import { Frame } from "./Frame";
 
 export type TUnselectedQueryKey = readonly ["items", "unselected", string];
 
@@ -33,7 +34,7 @@ async function fetchUnselectedItems({
 	return res.json();
 }
 
-export function FrameUnselectedProper() {
+export function FrameUnselected() {
 	const sentinelRef = useRef<HTMLDivElement | null>(null);
 	const containerRef = useRef<HTMLElement | null>(null);
 	const [filter, setFilter] = useState<string>("");
@@ -101,27 +102,18 @@ export function FrameUnselectedProper() {
 	if (isError) return <p>Failed to load items</p>;
 
 	return (
-		<section
-			style={{
-				width: "40%",
-				height: "6rem",
-				overflowY: "auto",
-				border: "3px black solid",
-				display: "flex",
-				flexDirection: "column",
-				gap: "1rem",
-				position: "relative",
-				zIndex: "1",
-			}}
-			ref={containerRef}
-		>
-			<div style={{ display: "flex", justifyContent: "space-between" }}>
+		<Frame containerRef={containerRef}>
+			<div
+				style={{
+					position: "sticky",
+					top: 0,
+					zIndex: 1,
+					display: "flex",
+					justifyContent: "space-between",
+				}}
+			>
 				<Filter filter={filter} setFilter={setFilter} />
-				<div
-					style={{
-						display: "flex",
-					}}
-				>
+				<div style={{ display: "flex" }}>
 					<input
 						type="text"
 						placeholder="New ID"
@@ -134,6 +126,7 @@ export function FrameUnselectedProper() {
 					</button>
 				</div>
 			</div>
+
 			<Items
 				displayed={items}
 				onSelect={(id) =>
@@ -156,6 +149,7 @@ export function FrameUnselectedProper() {
 						display: "flex",
 						justifyContent: "center",
 						alignItems: "center",
+						zIndex: 2,
 					}}
 				>
 					<div
@@ -172,6 +166,6 @@ export function FrameUnselectedProper() {
 					</div>
 				</div>
 			)}
-		</section>
+		</Frame>
 	);
 }

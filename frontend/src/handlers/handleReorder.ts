@@ -1,5 +1,5 @@
 import type { InfiniteData, QueryClient } from "@tanstack/react-query";
-import type { TSelectedQueryKey } from "../components/FrameSelectedProper";
+import type { TSelectedQueryKey } from "../components/FrameSelected";
 import type { IGetItemsResponse } from "../types/apiTypes";
 import type { TSide } from "../types/genTypes";
 import { moveItemRelativeTo } from "./moveItemRelativeTo";

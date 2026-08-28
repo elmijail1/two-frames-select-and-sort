@@ -12,6 +12,7 @@ import { useReorderQueue } from "../hooks/useReorderQueue";
 import type { IGetItemsResponse } from "../types/apiTypes";
 import { Filter } from "./Filter";
 import { Items } from "./Items";
+import { Frame } from "./Frame";
 
 export type TSelectedQueryKey = readonly ["items", "selected", string];
 
@@ -44,7 +45,7 @@ async function fetchSelectedItems({
 	return res.json();
 }
 
-export function FrameSelectedProper() {
+export function FrameSelected() {
 	const sentinelRef = useRef<HTMLDivElement | null>(null);
 	const containerRef = useRef<HTMLElement | null>(null);
 	const [filter, setFilter] = useState<string>("");
@@ -139,18 +140,7 @@ export function FrameSelectedProper() {
 				}
 			}}
 		>
-			<section
-				style={{
-					width: "40%",
-					height: "6rem",
-					overflowY: "auto",
-					border: "3px black solid",
-					display: "flex",
-					flexDirection: "column",
-					gap: "1rem",
-				}}
-				ref={containerRef}
-			>
+			<Frame containerRef={containerRef}>
 				<Filter filter={filter} setFilter={setFilter} />
 				<Items
 					displayed={items}
@@ -166,7 +156,7 @@ export function FrameSelectedProper() {
 						flexShrink: 0,
 					}}
 				></div>
-			</section>
+			</Frame>
 		</DragDropProvider>
 	);
 }

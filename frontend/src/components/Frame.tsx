@@ -1,42 +1,12 @@
-import { useEffect, useState } from "react";
-import type { IItem } from "../App";
-import { Items } from "./Items";
-import { Filter } from "./Filter";
+import type React from "react";
+import type { ReactNode } from "react";
 
-export interface IFrameProps {
-	items: IItem[];
-	onSelect: (id: number) => void;
-	children?: React.ReactNode;
-	sorted?: boolean;
-	onDisplayedChange?: (displayed: IItem[]) => void;
+interface IFrameProps {
+	containerRef: React.RefObject<HTMLElement | null>;
+	children?: ReactNode;
 }
 
-export function Frame({
-	items,
-	onSelect,
-	children,
-	sorted,
-	onDisplayedChange,
-}: IFrameProps) {
-	const [filter, setFilter] = useState<string>("");
-	const [displayed, setDisplayed] = useState<IItem[]>([]);
-
-	useEffect(() => {
-		onDisplayedChange?.(displayed);
-	}, [displayed, onDisplayedChange]);
-
-	useEffect(() => {
-		setDisplayed([...items]);
-	}, [items]);
-
-	useEffect(() => {
-		// TODO: add a debouncer
-		if (filter.trim().length > 0) {
-			setDisplayed(items.filter((i) => String(i.id).startsWith(filter)));
-		} else {
-			setDisplayed([...items]);
-		}
-	}, [filter, items]);
+export function Frame({ containerRef, children }: IFrameProps) {
 	return (
 		<section
 			style={{
@@ -47,10 +17,11 @@ export function Frame({
 				display: "flex",
 				flexDirection: "column",
 				gap: "1rem",
+				position: "relative",
+				zIndex: "1",
 			}}
+			ref={containerRef}
 		>
-			<Filter filter={filter} setFilter={setFilter} />
-			<Items displayed={displayed} onSelect={onSelect} sorted={sorted} />
 			{children}
 		</section>
 	);

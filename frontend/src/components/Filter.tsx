@@ -9,7 +9,7 @@ interface IFilterProps {
 export function Filter({ filter, setFilter }: IFilterProps) {
 	return (
 		<input
-			style={{ maxWidth: "5rem" }}
+			style={{ maxWidth: "5rem", position: "sticky", top: 0, left: 0 }}
 			type="text"
 			placeholder="Filter by ID"
 			value={filter}
