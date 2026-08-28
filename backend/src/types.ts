@@ -1,4 +1,4 @@
-import type { TGetItemsQueryParams } from "./schemas";
+import type { TGetItemsQueryParams, TReorderItem } from "./schemas";
 
 export interface IItem {
 	id: number;
@@ -18,4 +18,10 @@ export type TSelectItemsReturn = {
 	totalIds: number;
 	added: number[];
 	failed: number[];
+};
+
+export type TSortItemsReturn = {
+	totalItems: number;
+	reordered: TReorderItem[];
+	failed: TReorderItem[];
 };

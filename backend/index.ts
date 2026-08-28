@@ -5,7 +5,8 @@ import express, {
 	type Response,
 	Router,
 } from "express";
-import { itemsById, seedData } from "./src/data";
+import { seedData } from "./src/data";
+import { validateBody } from "./src/middleware/validateBody";
 import {
 	hasItemsQuery,
 	validateGetItemsParams,
@@ -13,6 +14,7 @@ import {
 import {
 	addItemsQuerySchema,
 	selectItemsQuerySchema,
+	sortItemsQuerySchema,
 	unselectItemsQuerySchema,
 } from "./src/schemas";
 import { addItems } from "./src/services/addItems";
@@ -22,6 +24,7 @@ import {
 	findUnselectedItemsFiltered,
 } from "./src/services/findItems";
 import { selectItems, unselectItems } from "./src/services/selectItems";
+import { sortItems } from "./src/services/sortItems";
 
 seedData();
 
@@ -30,14 +33,6 @@ const apiRouter = Router();
 const PORT = process.env.PORT || "3000";
 
 app.use(express.json());
-
-apiRouter.get("/health", (_req, res) => {
-	res.json({ status: "ok" });
-});
-
-apiRouter.get("/seed", (_req, res) => {
-	res.json(Array.from(itemsById.values()));
-});
 
 apiRouter.get("/items/unselected", validateGetItemsParams, (req, res) => {
 	if (!hasItemsQuery(req)) {
@@ -62,35 +57,41 @@ apiRouter.get("/items/selected", validateGetItemsParams, (req, res) => {
 	res.json(items);
 });
 
-apiRouter.post("/items/selected/batch", (req, res) => {
-	const parsingResult = selectItemsQuerySchema.safeParse(req.body);
-	if (!parsingResult.success) {
-		res.status(400).json({ error: parsingResult.error });
-		return;
-	}
-	const result = selectItems(parsingResult.data);
-	res.json(result);
-});
+apiRouter.post(
+	"/items/selected/batch",
+	validateBody(selectItemsQuerySchema),
+	(req, res) => {
+		const result = selectItems(req.body);
+		res.json(result);
+	},
+);
 
-apiRouter.post("/items/unselected/batch", (req, res) => {
-	const parsingResult = unselectItemsQuerySchema.safeParse(req.body);
-	if (!parsingResult.success) {
-		res.status(400).json({ error: parsingResult.error });
-		return;
-	}
-	const result = unselectItems(parsingResult.data);
-	res.json(result);
-});
+apiRouter.post(
+	"/items/unselected/batch",
+	validateBody(unselectItemsQuerySchema),
+	(req, res) => {
+		const result = unselectItems(req.body);
+		res.json(result);
+	},
+);
 
-apiRouter.post("/items/batch", (req, res) => {
-	const parsingResult = addItemsQuerySchema.safeParse(req.body);
-	if (!parsingResult.success) {
-		res.status(400).json({ error: parsingResult.error });
-		return;
-	}
-	const result = addItems(parsingResult.data);
-	res.json(result);
-});
+apiRouter.post(
+	"/items/batch",
+	validateBody(addItemsQuerySchema),
+	(req, res) => {
+		const result = addItems(req.body);
+		res.json(result);
+	},
+);
+
+apiRouter.post(
+	"/items/selected/reorder/batch",
+	validateBody(sortItemsQuerySchema),
+	(req, res) => {
+		const result = sortItems(req.body);
+		res.json(result);
+	},
+);
 
 app.use("/api", apiRouter);
 

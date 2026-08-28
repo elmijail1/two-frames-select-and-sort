@@ -1,20 +1,33 @@
+import { DragDropProvider } from "@dnd-kit/react";
 import {
 	keepPreviousData,
 	useInfiniteQuery,
 	useQueryClient,
 } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
+import { handleReorder } from "../handlers/handleReorder";
 import { handleUnselection } from "../handlers/handleUnselection";
 import { useSelectQueue } from "../hooks/useBatchQueue";
+import { useReorderQueue } from "../hooks/useReorderQueue";
 import type { IGetItemsResponse } from "../types/apiTypes";
 import { Filter } from "./Filter";
 import { Items } from "./Items";
+import { Frame } from "./Frame";
 
 export type TSelectedQueryKey = readonly ["items", "selected", string];
 
 interface IGetItemsParams {
 	pageParam?: number;
 	queryKey: TSelectedQueryKey;
+}
+
+interface SortableDraggable {
+	sortable: { index: number };
+}
+
+// TODOC: TS goes bananas about source.sortable.index w/o it: it doesn't see "sortable" on "source", since it's added on it at runtime by OptimisticSortingPlugin – console.log() it to make sure that the real object has this shape, hence it's safe to type-guard it this way
+function hasSortableIndex(x: unknown): x is SortableDraggable {
+	return typeof x === "object" && x !== null && "sortable" in x;
 }
 
 async function fetchSelectedItems({
@@ -32,7 +45,7 @@ async function fetchSelectedItems({
 	return res.json();
 }
 
-export function FrameSelectedProper() {
+export function FrameSelected() {
 	const sentinelRef = useRef<HTMLDivElement | null>(null);
 	const containerRef = useRef<HTMLElement | null>(null);
 	const [filter, setFilter] = useState<string>("");
@@ -80,36 +93,70 @@ export function FrameSelectedProper() {
 	const { enqueue: enqueueUnselect } = useSelectQueue("unselect");
 	const queryClient = useQueryClient();
 
+	const { enqueueReorder } = useReorderQueue();
+
 	if (isLoading) return <p>Loading...</p>;
 	if (isError) return <p>Failed to load items</p>;
 
 	return (
-		<section
-			style={{
-				width: "40%",
-				height: "6rem",
-				overflowY: "auto",
-				border: "3px black solid",
-				display: "flex",
-				flexDirection: "column",
-				gap: "1rem",
-			}}
-			ref={containerRef}
-		>
-			<Filter filter={filter} setFilter={setFilter} />
-			<Items
-				displayed={items}
-				onSelect={(id) =>
-					handleUnselection({ id, enqueueUnselect, queryKey, queryClient })
+		<DragDropProvider
+			onDragEnd={(e) => {
+				if (e.canceled) return;
+				const { source } = e.operation;
+				if (!source || !hasSortableIndex(source)) return;
+
+				const id = Number(source.id);
+				if (Number.isNaN(id)) return;
+				const newIndex = source.sortable.index;
+
+				const itemsWithoutDraggedItem = items.filter((i) => i.id !== id);
+				const reconstructed = [
+					...itemsWithoutDraggedItem.slice(0, newIndex),
+					{ id },
+					...itemsWithoutDraggedItem.slice(newIndex),
+				];
+				const position = reconstructed.findIndex((i) => i.id === id);
+				const prev = reconstructed[position - 1];
+				const next = reconstructed[position + 1];
+
+				if (prev) {
+					handleReorder({
+						id,
+						neighbourId: prev.id,
+						side: "after",
+						enqueueReorder,
+						queryKey,
+						queryClient,
+					});
+				} else if (next) {
+					handleReorder({
+						id,
+						neighbourId: next.id,
+						side: "before",
+						enqueueReorder,
+						queryKey,
+						queryClient,
+					});
 				}
-			/>
-			<div
-				ref={sentinelRef}
-				style={{
-					height: "1rem",
-					flexShrink: 0,
-				}}
-			></div>
-		</section>
+			}}
+		>
+			<Frame containerRef={containerRef}>
+				<Filter filter={filter} setFilter={setFilter} />
+				<Items
+					displayed={items}
+					onSelect={(id) =>
+						handleUnselection({ id, enqueueUnselect, queryKey, queryClient })
+					}
+					sorted={true}
+				/>
+				<div
+					ref={sentinelRef}
+					style={{
+						height: "1rem",
+						flexShrink: 0,
+					}}
+				></div>
+			</Frame>
+		</DragDropProvider>
 	);
 }

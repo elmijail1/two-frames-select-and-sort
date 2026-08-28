@@ -1,4 +1,4 @@
-import type { IItem } from "../App";
+import type { IItem } from "../types/genTypes";
 import { Item } from "./Item";
 import { ItemSortable } from "./ItemSortable";
 
