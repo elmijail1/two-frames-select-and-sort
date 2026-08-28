@@ -9,7 +9,7 @@ import type {
 	TUnselectItemsQueryParams,
 } from "../schemas";
 import type { TSelectItemsReturn } from "../types";
-import { findFirstIndexGreaterThan } from "./utilities";
+import { findFirstIndexGreaterThan, mergeSortedInsert } from "./utilities";
 
 export function selectItems(ids: TSelectItemsQueryParams): TSelectItemsReturn {
 	const added: number[] = [];
@@ -67,12 +67,29 @@ export function unselectItems(
 		}
 		selectedIdsUniqueValues.delete(id);
 		unselectedIdsUniqueValues.add(id);
-		const oldInd = selectedIdsOrder.indexOf(id);
-		selectedIdsOrder.splice(oldInd, 1);
-		const newInd = findFirstIndexGreaterThan(unselectedIdsOrder, id);
-		unselectedIdsOrder.splice(newInd, 0, id);
-
 		added.push(id);
 	}
+
+	if (added.length > 0) {
+		let writeIndex = 0;
+		for (let i = 0; i < selectedIdsOrder.length; i++) {
+			const currentId = selectedIdsOrder[i];
+			if (!selectedIdsUniqueValues.has(currentId)) continue;
+			selectedIdsOrder[writeIndex] = currentId;
+			writeIndex++;
+		}
+		selectedIdsOrder.length = writeIndex;
+
+		if (added.length > 3) {
+			mergeSortedInsert(unselectedIdsOrder, added);
+		} else {
+			for (let i = 0; i < added.length; i++) {
+				const id = added[i];
+				const ind = findFirstIndexGreaterThan(unselectedIdsOrder, id);
+				unselectedIdsOrder.splice(ind, 0, id);
+			}
+		}
+	}
+
 	return { added, failed, totalIds: added.length + failed.length };
 }
