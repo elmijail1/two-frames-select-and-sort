@@ -3,14 +3,14 @@ import {
 	useInfiniteQuery,
 	useQueryClient,
 } from "@tanstack/react-query";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { handleAddition } from "../handlers/handleAddition";
 import { handleSelection } from "../handlers/handleSelection";
 import { useAddItemQueue, useSelectQueue } from "../hooks/useBatchQueue";
 import type { IGetItemsResponse } from "../types/apiTypes";
 import { Filter } from "./Filter";
-import { Items } from "./Items";
 import { Frame } from "./Frame";
+import { Items } from "./Items";
 
 export type TUnselectedQueryKey = readonly ["items", "unselected", string];
 
@@ -67,7 +67,10 @@ export function FrameUnselected() {
 		getNextPageParam: (lastPage) => lastPage.newLatestId ?? undefined,
 		placeholderData: keepPreviousData,
 	});
-	const items = data?.pages.flatMap((page) => page.items) ?? [];
+	const items = useMemo(
+		() => data?.pages.flatMap((page) => page.items) ?? [],
+		[data],
+	);
 
 	useEffect(() => {
 		const sentinel = sentinelRef.current;
@@ -129,6 +132,7 @@ export function FrameUnselected() {
 
 			<Items
 				displayed={items}
+				containerRef={containerRef}
 				onSelect={(id) =>
 					handleSelection({ id, queryClient, queryKey, enqueueSelect })
 				}
@@ -138,6 +142,8 @@ export function FrameUnselected() {
 				style={{
 					height: "1rem",
 					flexShrink: 0,
+					backgroundColor: "yellow",
+					width: "1rem",
 				}}
 			></div>
 			{errorItemToAdd && (
