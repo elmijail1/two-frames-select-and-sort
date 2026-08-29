@@ -4,16 +4,7 @@ import { FrameUnselected } from "./components/FrameUnselected";
 function App() {
 	return (
 		<main>
-			<div
-				style={{
-					display: "flex",
-					width: "90%",
-					justifyContent: "center",
-					gap: "1rem",
-					backgroundColor: "hsl(150, 100%, 80%)",
-					margin: "0 auto",
-				}}
-			>
+			<div className="flex justify-center gap-4 w-[90%] py-8 mx-auto bg-[hsl(150,100%,80%)]">
 				<FrameUnselected />
 				<FrameSelected />
 			</div>

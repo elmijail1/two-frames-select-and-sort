@@ -24,6 +24,9 @@ async function fetchUnselectedItems({
 	queryKey,
 }: IGetItemsParams): Promise<IGetItemsResponse> {
 	const filter = queryKey[2];
+	if (filter && filter !== "-" && Number.isNaN(Number(filter))) {
+		return { items: [], newLatestId: null };
+	}
 	const params = new URLSearchParams();
 	if (pageParam !== undefined) {
 		params.set("latestId", String(pageParam));
@@ -95,6 +98,7 @@ export function FrameUnselected() {
 	function addItem(id: string) {
 		if (id.trim().length === 0 || Number.isNaN(Number(id))) {
 			setErrorItemToAdd("Please enter a valid number");
+			setItemToAdd("");
 			return;
 		}
 		handleAddition({ id: Number(id), enqueueAddItem, queryKey, queryClient });
@@ -124,7 +128,11 @@ export function FrameUnselected() {
 						value={itemToAdd}
 						onChange={(e) => setItemToAdd(e.target.value)}
 					/>
-					<button type="button" onClick={() => addItem(itemToAdd)}>
+					<button
+						type="button"
+						onClick={() => addItem(itemToAdd)}
+						className="cursor-pointer"
+					>
 						Add
 					</button>
 				</div>
@@ -164,8 +172,12 @@ export function FrameUnselected() {
 						}}
 					>
 						<p>{errorItemToAdd}</p>
-						<button type="button" onClick={() => setErrorItemToAdd("")}>
-							Ok
+						<button
+							type="button"
+							onClick={() => setErrorItemToAdd("")}
+							className="cursor-pointer"
+						>
+							OK
 						</button>
 					</div>
 				</div>
