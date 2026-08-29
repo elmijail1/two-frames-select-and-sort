@@ -24,6 +24,9 @@ async function fetchUnselectedItems({
 	queryKey,
 }: IGetItemsParams): Promise<IGetItemsResponse> {
 	const filter = queryKey[2];
+	if (filter && filter !== "-" && Number.isNaN(Number(filter))) {
+		return { items: [], newLatestId: null };
+	}
 	const params = new URLSearchParams();
 	if (pageParam !== undefined) {
 		params.set("latestId", String(pageParam));
