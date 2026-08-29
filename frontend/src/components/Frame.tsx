@@ -9,17 +9,7 @@ interface IFrameProps {
 export function Frame({ containerRef, children }: IFrameProps) {
 	return (
 		<section
-			style={{
-				width: "40%",
-				height: "6rem",
-				overflowY: "auto",
-				border: "3px black solid",
-				display: "flex",
-				flexDirection: "column",
-				gap: "1rem",
-				position: "relative",
-				zIndex: "1",
-			}}
+			className="w-[40%] h-40 bg-[hsl(150,100%,90%)] overflow-y-auto overflow-x-hidden rounded-xl flex flex-col gap-4 relative z-10 p-4"
 			ref={containerRef}
 		>
 			{children}
