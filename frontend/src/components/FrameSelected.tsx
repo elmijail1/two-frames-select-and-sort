@@ -143,7 +143,7 @@ export function FrameSelected() {
 				}
 			}}
 		>
-			<Frame containerRef={containerRef}>
+			<Frame containerRef={containerRef} sortable={true}>
 				<Filter filter={filter} setFilter={setFilter} />
 				<Items
 					displayed={items}

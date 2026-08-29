@@ -8,5 +8,5 @@ interface IItemSortableProps extends IItemProps {
 export function ItemSortable({ id, index, onSelect }: IItemSortableProps) {
 	const { ref } = useSortable({ id, index });
 
-	return <Item id={id} onSelect={onSelect} ref={ref} />;
+	return <Item id={id} onSelect={onSelect} ref={ref} sortable={true} />;
 }
