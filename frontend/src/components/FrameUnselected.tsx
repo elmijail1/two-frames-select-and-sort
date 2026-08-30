@@ -5,39 +5,16 @@ import {
 	useQueryClient,
 } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { fetchItems } from "../handlers/fetchItems";
 import { handleAddition, itemExistsInCache } from "../handlers/handleAddition";
 import { handleSelection } from "../handlers/handleSelection";
 import { insertItemSorted } from "../handlers/insertItemSorted";
 import { useAddItemQueue, useSelectQueue } from "../hooks/useBatchQueue";
 import type { IGetItemsResponse } from "../types/apiTypes";
+import type { TUnselectedQueryKey } from "../types/queryTypes";
 import { Filter } from "./Filter";
 import { Frame } from "./Frame";
 import { Items } from "./Items";
-
-export type TUnselectedQueryKey = readonly ["items", "unselected", string];
-
-interface IGetItemsParams {
-	pageParam?: number;
-	queryKey: TUnselectedQueryKey;
-}
-
-async function fetchUnselectedItems({
-	pageParam,
-	queryKey,
-}: IGetItemsParams): Promise<IGetItemsResponse> {
-	const filter = queryKey[2];
-	if (filter && filter !== "-" && Number.isNaN(Number(filter))) {
-		return { items: [], newLatestId: null };
-	}
-	const params = new URLSearchParams();
-	if (pageParam !== undefined) {
-		params.set("latestId", String(pageParam));
-	}
-	if (filter) params.set("filter", filter);
-	const res = await fetch(`/api/items/unselected?${params}`);
-	if (!res.ok) throw new Error("Failed to fetch unselected items");
-	return res.json();
-}
 
 export function FrameUnselected() {
 	const sentinelRef = useRef<HTMLDivElement | null>(null);
@@ -78,7 +55,12 @@ export function FrameUnselected() {
 		isFetchingNextPage,
 	} = useInfiniteQuery({
 		queryKey,
-		queryFn: fetchUnselectedItems,
+		queryFn: ({ pageParam }: { pageParam: number | undefined }) =>
+			fetchItems({
+				pageParam,
+				queryKey,
+				itemType: "unselected",
+			}),
 		initialPageParam,
 		getNextPageParam: (lastPage) => lastPage.newLatestId ?? undefined,
 		placeholderData: keepPreviousData,

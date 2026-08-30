@@ -1,4 +1,4 @@
-import type { IItem } from "../App";
+import type { IItem } from "./genTypes";
 
 export interface IGetItemsResponse {
 	items: IItem[];

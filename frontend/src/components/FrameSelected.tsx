@@ -5,47 +5,23 @@ import {
 	useQueryClient,
 } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { fetchItems } from "../handlers/fetchItems";
 import { handleReorder } from "../handlers/handleReorder";
 import { handleUnselection } from "../handlers/handleUnselection";
 import { useSelectQueue } from "../hooks/useBatchQueue";
 import { useReorderQueue } from "../hooks/useReorderQueue";
-import type { IGetItemsResponse } from "../types/apiTypes";
+import type { TSelectedQueryKey } from "../types/queryTypes";
 import { Filter } from "./Filter";
 import { Frame } from "./Frame";
 import { Items } from "./Items";
-
-export type TSelectedQueryKey = readonly ["items", "selected", string];
-
-interface IGetItemsParams {
-	pageParam?: number;
-	queryKey: TSelectedQueryKey;
-}
 
 interface SortableDraggable {
 	sortable: { index: number };
 }
 
-// TODOC: TS goes bananas about source.sortable.index w/o it: it doesn't see "sortable" on "source", since it's added on it at runtime by OptimisticSortingPlugin – console.log() it to make sure that the real object has this shape, hence it's safe to type-guard it this way
+// TS goes bananas about source.sortable.index w/o it: it doesn't see "sortable" on "source", since it's added on it at runtime by OptimisticSortingPlugin – console.log() it to make sure that the real object has this shape, hence it's safe to type-guard it this way
 function hasSortableIndex(x: unknown): x is SortableDraggable {
 	return typeof x === "object" && x !== null && "sortable" in x;
-}
-
-async function fetchSelectedItems({
-	pageParam,
-	queryKey,
-}: IGetItemsParams): Promise<IGetItemsResponse> {
-	const filter = queryKey[2];
-	if (filter && filter !== "-" && Number.isNaN(Number(filter))) {
-		return { items: [], newLatestId: null };
-	}
-	const params = new URLSearchParams();
-	if (pageParam !== undefined) {
-		params.set("latestId", String(pageParam));
-	}
-	if (filter) params.set("filter", filter);
-	const res = await fetch(`/api/items/selected?${params}`);
-	if (!res.ok) throw new Error("Failed to fetch selected items");
-	return res.json();
 }
 
 export function FrameSelected() {
@@ -70,7 +46,12 @@ export function FrameSelected() {
 		isFetchingNextPage,
 	} = useInfiniteQuery({
 		queryKey,
-		queryFn: fetchSelectedItems,
+		queryFn: ({ pageParam }: { pageParam: number | undefined }) =>
+			fetchItems({
+				pageParam,
+				queryKey,
+				itemType: "selected",
+			}),
 		initialPageParam,
 		getNextPageParam: (lastPage) => lastPage.newLatestId ?? undefined,
 		placeholderData: keepPreviousData,
