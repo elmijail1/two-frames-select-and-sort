@@ -1,15 +1,15 @@
 import type { InfiniteData } from "@tanstack/react-query";
 import type { IGetItemsResponse } from "../types/apiTypes";
 
-export function insertItemSorted(
-	oldData: InfiniteData<IGetItemsResponse>,
+export function insertItemSorted<TPageParam = number | undefined>(
+	oldData: InfiniteData<IGetItemsResponse, TPageParam>,
 	id: number,
-): InfiniteData<IGetItemsResponse> {
+): InfiniteData<IGetItemsResponse, TPageParam> {
 	if (oldData.pages.length === 0) {
 		return {
 			...oldData,
 			pages: [{ items: [{ id }], newLatestId: null }],
-			pageParams: [undefined],
+			pageParams: [undefined as TPageParam],
 		};
 	}
 	let inserted = false;

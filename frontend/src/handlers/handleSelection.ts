@@ -1,6 +1,7 @@
 import type { InfiniteData, QueryClient } from "@tanstack/react-query";
 import type { TUnselectedQueryKey } from "../components/FrameUnselected";
 import type { IGetItemsResponse } from "../types/apiTypes";
+import { appendItemToEnd } from "./appendItemToEnd";
 
 interface IHandleSelectionProps {
 	id: number;
@@ -44,20 +45,6 @@ export function handleSelection({
 		if (filter && !String(id).startsWith(filter)) {
 			continue;
 		}
-		if (oldData.pages.length === 0) {
-			queryClient.setQueryData(key, {
-				...oldData,
-				pages: [{ items: [{ id }], newLatestId: null }],
-				pageParams: [undefined],
-			});
-			continue;
-		}
-		const lastIndex = oldData.pages.length - 1;
-		queryClient.setQueryData(key, {
-			...oldData,
-			pages: oldData.pages.map((page, i) =>
-				i === lastIndex ? { ...page, items: [...page.items, { id }] } : page,
-			),
-		});
+		queryClient.setQueryData(key, appendItemToEnd(oldData, id));
 	}
 }

@@ -1,7 +1,6 @@
 import type { InfiniteData, QueryClient } from "@tanstack/react-query";
 import type { TUnselectedQueryKey } from "../components/FrameUnselected";
 import type { IGetItemsResponse } from "../types/apiTypes";
-import { insertItemSorted } from "./insertItemSorted";
 
 interface IHandleAdditionProps {
 	id: number;
@@ -16,30 +15,22 @@ export function handleAddition({
 	queryKey,
 	queryClient,
 }: IHandleAdditionProps) {
-	enqueueAddItem(id);
-	const filter = queryKey[2];
-	if (filter && !String(id).startsWith(filter)) return;
+	const unselectedData =
+		queryClient.getQueryData<InfiniteData<IGetItemsResponse>>(queryKey);
+	if (itemExistsInCache(unselectedData, id)) return false;
 
 	const selectedMatches = queryClient.getQueriesData<
 		InfiniteData<IGetItemsResponse>
-	>({
-		queryKey: ["items", "selected"],
-		type: "active",
-	});
-	if (selectedMatches.some(([_key, data]) => itemExistsInCache(data, id)))
-		return;
+	>({ queryKey: ["items", "selected"], type: "active" });
+	if (selectedMatches.some(([, data]) => itemExistsInCache(data, id))) {
+		return false;
+	}
 
-	queryClient.setQueryData(
-		queryKey,
-		(oldData: InfiniteData<IGetItemsResponse> | undefined) => {
-			if (!oldData) return undefined;
-			if (itemExistsInCache(oldData, id)) return oldData;
-			return insertItemSorted(oldData, id);
-		},
-	);
+	enqueueAddItem(id);
+	return true;
 }
 
-function itemExistsInCache(
+export function itemExistsInCache(
 	data: InfiniteData<IGetItemsResponse> | undefined,
 	id: number,
 ): boolean {

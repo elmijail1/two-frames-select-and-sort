@@ -9,6 +9,7 @@ interface IItemsProps {
 	onSelect: (id: number) => void;
 	sorted?: boolean;
 	containerRef: React.RefObject<HTMLElement | null>;
+	pendingIds?: Set<number>;
 }
 
 const ITEM_SIZE_PX_SMALL = 64;
@@ -21,6 +22,7 @@ export function Items({
 	onSelect,
 	sorted,
 	containerRef,
+	pendingIds,
 }: IItemsProps) {
 	const [itemsPerRow, setItemsPerRow] = useState(1);
 	useEffect(() => {
@@ -93,7 +95,12 @@ export function Items({
 					}}
 				>
 					{rows[virtualRow.index].map((item) => (
-						<Item key={item.id} id={item.id} onSelect={onSelect} />
+						<Item
+							key={item.id}
+							id={item.id}
+							onSelect={onSelect}
+							pending={pendingIds?.has(item.id)}
+						/>
 					))}
 				</div>
 			))}

@@ -13,7 +13,7 @@ export function Frame({ containerRef, sortable, children }: IFrameProps) {
 	("bg-[hsl(25,100%,80%)] text-[hsl(25,100%,35%)] border-[25,50%,50%)]");
 	return (
 		<section
-			className={`w-[40%] h-40 overflow-y-auto overflow-x-hidden rounded-xl flex flex-col gap-4 relative z-10 p-4 ${sortable ? sortableColors : standardColors}`}
+			className={`w-[40%] max-md:w-[80%] h-40 overflow-y-auto overflow-x-hidden rounded-xl flex flex-col gap-4 relative z-10 p-4 ${sortable ? sortableColors : standardColors}`}
 			ref={containerRef}
 		>
 			{children}

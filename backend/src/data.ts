@@ -2,6 +2,7 @@ import type { IItem } from "./types";
 
 const SEED_COUNT = 1_000_000;
 export const DEF_BATCH_SIZE = 20;
+export const UPDATE_INTERVAL_MS = 1_000;
 
 export const itemsById: Map<number, IItem> = new Map();
 export const selectedIdsOrder: number[] = [];
