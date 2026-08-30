@@ -43,8 +43,6 @@ export function unregisterClient(res: Response) {
 
 function broadcast(event: string) {
 	for (const res of clients) {
-		console.log("res before: ", res);
 		res.write(`event: ${event}\ndata: {}\n\n`);
-		console.log("res after: ", res);
 	}
 }
