@@ -59,7 +59,16 @@ export function FrameUnselected() {
 	);
 
 	const initialPageParam: number | undefined = undefined;
-	const { enqueue: enqueueAddItem, pendingIds } = useAddItemQueue();
+	const { enqueue: enqueueAddItem, pendingIds } = useAddItemQueue(
+		(failedIds) => {
+			setOverlayIds((prev) => {
+				if (failedIds.every((id) => !prev.has(id))) return prev;
+				const next = new Set(prev);
+				for (const id of failedIds) next.delete(id);
+				return next;
+			});
+		},
+	);
 	const {
 		data,
 		isLoading,

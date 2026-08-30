@@ -7,7 +7,12 @@ import { ADD_URL, SELECT_URL, UNSELECT_URL } from "../configs/urls";
 
 type TSelectType = "select" | "unselect";
 
-function useBatchQueue(url: string, intervalMs: number, storageKey: string) {
+function useBatchQueue(
+	url: string,
+	intervalMs: number,
+	storageKey: string,
+	onFailed?: (ids: number[]) => void,
+) {
 	const queueRef = useRef<Set<number>>(new Set());
 	const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 	const [pendingIds, setPendingIds] = useState<Set<number>>(new Set());
@@ -34,6 +39,8 @@ function useBatchQueue(url: string, intervalMs: number, storageKey: string) {
 				body: JSON.stringify(idsToFlush),
 			});
 			if (!res.ok) throw new Error("Failed to flush a batch");
+			const result: { added: number[]; failed: number[] } = await res.json();
+			if (result.failed.length > 0) onFailed?.(result.failed);
 		} catch (error) {
 			console.error(error);
 		} finally {
@@ -74,8 +81,8 @@ export function useSelectQueue(selectType: TSelectType) {
 	return useBatchQueue(url, SELECT_INTERVAL_MS, `queue:${selectType}`);
 }
 
-export function useAddItemQueue() {
-	return useBatchQueue(ADD_URL, ADD_INTERVAL_MS, "queue:add");
+export function useAddItemQueue(onFailed?: (ids: number[]) => void) {
+	return useBatchQueue(ADD_URL, ADD_INTERVAL_MS, "queue:add", onFailed);
 }
 
 function readStoredQueue(storageKey: string): number[] {
