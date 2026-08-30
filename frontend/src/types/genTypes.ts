@@ -3,3 +3,4 @@ export interface IItem {
 }
 
 export type TSide = "before" | "after";
+export type TItemType = "selected" | "unselected";
