@@ -131,7 +131,7 @@ export function FrameUnselected() {
 		setItemToAdd("");
 	}
 
-	// biome-ignore lint/correctness/useExhaustiveDependencies: `data` isn't read directly; it's kept only to re-trigger this effect when the cache changes, since we intentionally read the raw (pre-`select`) cache below instead of `data` itself.
+	// biome-ignore lint/correctness/useExhaustiveDependencies: data isn't read directly; it's kept only to re-trigger this effect when the cache changes, since we intentionally read the raw pre-select cache below instead of data itself
 	useEffect(() => {
 		if (overlayIds.size === 0) return;
 		const raw =
