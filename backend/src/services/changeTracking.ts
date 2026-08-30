@@ -14,14 +14,12 @@ function scheduleFlush() {
 function flush() {
 	flushTimeout = null;
 	if (unselectedDirty) {
-		if (unselectedDirty) {
-			broadcast("unselected-changed");
-			unselectedDirty = false;
-		}
-		if (selectedDirty) {
-			broadcast("selected-changed");
-			selectedDirty = false;
-		}
+		broadcast("unselected-changed");
+		unselectedDirty = false;
+	}
+	if (selectedDirty) {
+		broadcast("selected-changed");
+		selectedDirty = false;
 	}
 }
 
