@@ -17,6 +17,20 @@ const ITEM_SIZE_PX_BIG = 72;
 const HORIZONTAL_PADDING_PX = 16;
 const GAP_PX = 8;
 
+function getCurrentItemSize(): number {
+	const isSmall = window.matchMedia("(max-width: 1024px)").matches;
+	return isSmall ? ITEM_SIZE_PX_SMALL : ITEM_SIZE_PX_BIG;
+}
+
+function getItemsPerRow(container: HTMLElement): number {
+	const itemSize = getCurrentItemSize();
+	const availableWidth = container.clientWidth - HORIZONTAL_PADDING_PX * 2;
+	return Math.max(
+		1,
+		Math.floor((availableWidth + GAP_PX) / (itemSize + GAP_PX)),
+	);
+}
+
 export function Items({
 	displayed,
 	onSelect,
@@ -32,15 +46,7 @@ export function Items({
 		function updateItemsPerRow() {
 			const current = containerRef.current;
 			if (!current) return;
-			const isSmall = window.matchMedia("(max-width: 1024px)").matches;
-			const itemSize = isSmall ? ITEM_SIZE_PX_SMALL : ITEM_SIZE_PX_BIG;
-			const availableWIdth = current.clientWidth - HORIZONTAL_PADDING_PX * 2;
-			setItemsPerRow(
-				Math.max(
-					1,
-					Math.floor((availableWIdth + GAP_PX) / (itemSize + GAP_PX)),
-				),
-			);
+			setItemsPerRow(getItemsPerRow(current));
 		}
 
 		updateItemsPerRow();
@@ -60,11 +66,7 @@ export function Items({
 	const rowVirtualizer = useVirtualizer({
 		count: rows.length,
 		getScrollElement: () => containerRef.current,
-		estimateSize: () => {
-			const isSmall = window.matchMedia("(max-width: 1024px)").matches;
-			const itemSize = isSmall ? ITEM_SIZE_PX_SMALL : ITEM_SIZE_PX_BIG;
-			return itemSize + GAP_PX;
-		},
+		estimateSize: () => getCurrentItemSize() + GAP_PX,
 		overscan: 5,
 	});
 
