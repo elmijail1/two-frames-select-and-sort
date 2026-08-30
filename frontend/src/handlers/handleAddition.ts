@@ -39,7 +39,7 @@ export function handleAddition({
 	);
 }
 
-function itemExistsInCache(
+export function itemExistsInCache(
 	data: InfiniteData<IGetItemsResponse> | undefined,
 	id: number,
 ): boolean {

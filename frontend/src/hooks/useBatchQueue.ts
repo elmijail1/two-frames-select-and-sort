@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import {
 	ADD_INTERVAL_MS,
 	SELECT_INTERVAL_MS,
@@ -10,6 +10,7 @@ type TSelectType = "select" | "unselect";
 function useBatchQueue(url: string, intervalMs: number) {
 	const queueRef = useRef<Set<number>>(new Set());
 	const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+	const [pendingIds, setPendingIds] = useState<Set<number>>(new Set());
 
 	function scheduleFlush() {
 		if (timeoutRef.current !== null) return;
@@ -35,6 +36,13 @@ function useBatchQueue(url: string, intervalMs: number) {
 		} catch (error) {
 			console.error(error);
 		} finally {
+			setPendingIds((prev) => {
+				const next = new Set(prev);
+				for (const id of idsToFlush) {
+					next.delete(id);
+				}
+				return next;
+			});
 			if (queueRef.current.size > 0) {
 				scheduleFlush();
 			}
@@ -43,10 +51,11 @@ function useBatchQueue(url: string, intervalMs: number) {
 
 	function enqueue(id: number) {
 		queueRef.current.add(id);
+		setPendingIds((prev) => new Set(prev).add(id));
 		scheduleFlush();
 	}
 
-	return { enqueue };
+	return { enqueue, pendingIds };
 }
 
 export function useSelectQueue(selectType: TSelectType) {

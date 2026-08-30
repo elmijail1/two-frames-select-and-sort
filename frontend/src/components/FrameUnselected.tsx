@@ -4,8 +4,9 @@ import {
 	useQueryClient,
 } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { handleAddition } from "../handlers/handleAddition";
+import { handleAddition, itemExistsInCache } from "../handlers/handleAddition";
 import { handleSelection } from "../handlers/handleSelection";
+import { insertItemSorted } from "../handlers/insertItemSorted";
 import { useAddItemQueue, useSelectQueue } from "../hooks/useBatchQueue";
 import type { IGetItemsResponse } from "../types/apiTypes";
 import { Filter } from "./Filter";
@@ -56,6 +57,7 @@ export function FrameUnselected() {
 		debouncedFilter,
 	];
 	const initialPageParam: number | undefined = undefined;
+	const { enqueue: enqueueAddItem, pendingIds } = useAddItemQueue();
 	const {
 		data,
 		isLoading,
@@ -69,6 +71,17 @@ export function FrameUnselected() {
 		initialPageParam,
 		getNextPageParam: (lastPage) => lastPage.newLatestId ?? undefined,
 		placeholderData: keepPreviousData,
+		select: (data) => {
+			let result = data;
+			for (const id of pendingIds) {
+				if (debouncedFilter && !String(id).startsWith(debouncedFilter)) {
+					continue;
+				}
+				if (itemExistsInCache(result, id)) continue;
+				result = insertItemSorted(result, id);
+			}
+			return result;
+		},
 	});
 	const items = useMemo(
 		() => data?.pages.flatMap((page) => page.items) ?? [],
@@ -94,7 +107,6 @@ export function FrameUnselected() {
 	const { enqueue: enqueueSelect } = useSelectQueue("select");
 	const queryClient = useQueryClient();
 
-	const { enqueue: enqueueAddItem } = useAddItemQueue();
 	function addItem(id: string) {
 		if (id.trim().length === 0 || Number.isNaN(Number(id))) {
 			setErrorItemToAdd("Please enter a valid number");
@@ -144,6 +156,7 @@ export function FrameUnselected() {
 				onSelect={(id) =>
 					handleSelection({ id, queryClient, queryKey, enqueueSelect })
 				}
+				pendingIds={pendingIds}
 			/>
 			<div
 				ref={sentinelRef}
