@@ -3,6 +3,7 @@ import {
 	keepPreviousData,
 	useInfiniteQuery,
 	useQueryClient,
+	type InfiniteData,
 } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { fetchItems } from "../handlers/fetchItems";
@@ -14,6 +15,8 @@ import type { TSelectedQueryKey } from "../types/queryTypes";
 import { Filter } from "./Filter";
 import { Frame } from "./Frame";
 import { Items } from "./Items";
+import { prepareObserver } from "../handlers/prepareObserver";
+import type { IGetItemsResponse } from "../types/apiTypes";
 
 interface SortableDraggable {
 	sortable: { index: number };
@@ -44,7 +47,13 @@ export function FrameSelected() {
 		fetchNextPage,
 		hasNextPage,
 		isFetchingNextPage,
-	} = useInfiniteQuery({
+	} = useInfiniteQuery<
+		IGetItemsResponse,
+		Error,
+		InfiniteData<IGetItemsResponse, number | undefined>,
+		TSelectedQueryKey,
+		number | undefined
+	>({
 		queryKey,
 		queryFn: ({ pageParam }: { pageParam: number | undefined }) =>
 			fetchItems({
@@ -63,16 +72,13 @@ export function FrameSelected() {
 
 	useEffect(() => {
 		const sentinel = sentinelRef.current;
-		const container = containerRef.current;
 		if (!sentinel) return;
-		const observer = new IntersectionObserver(
-			([entry]) => {
-				if (entry.isIntersecting && hasNextPage && !isFetchingNextPage) {
-					fetchNextPage();
-				}
-			},
-			{ root: container },
-		);
+		const observer = prepareObserver({
+			containerRef,
+			hasNextPage,
+			isFetchingNextPage,
+			fetchNextPage,
+		});
 		observer.observe(sentinel);
 		return () => observer.disconnect();
 	}, [hasNextPage, isFetchingNextPage, fetchNextPage]);
