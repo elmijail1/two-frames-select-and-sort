@@ -5,6 +5,7 @@ import {
 } from "../data";
 import type { TReorderItem, TSortItemsQueryParams } from "../schemas";
 import type { TSortItemsReturn } from "../types";
+import { markSelectedDirty } from "./changeTracking";
 
 export function sortItems(items: TSortItemsQueryParams): TSortItemsReturn {
 	const reordered: TSortItemsQueryParams = [];
@@ -18,6 +19,7 @@ export function sortItems(items: TSortItemsQueryParams): TSortItemsReturn {
 			failed.push(item);
 		}
 	}
+	if (reordered.length > 0) markSelectedDirty();
 	return { reordered, failed, totalItems: reordered.length + failed.length };
 }
 

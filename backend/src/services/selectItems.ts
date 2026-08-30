@@ -9,6 +9,7 @@ import type {
 	TUnselectItemsQueryParams,
 } from "../schemas";
 import type { TSelectItemsReturn } from "../types";
+import { markSelectedDirty, markUnselectedDirty } from "./changeTracking";
 import { findFirstIndexGreaterThan, mergeSortedInsert } from "./utilities";
 
 export function selectItems(ids: TSelectItemsQueryParams): TSelectItemsReturn {
@@ -46,6 +47,10 @@ export function selectItems(ids: TSelectItemsQueryParams): TSelectItemsReturn {
 		unselectedIdsOrder.length = writeIndex;
 	}
 
+	if (added.length > 0) {
+		markUnselectedDirty();
+		markSelectedDirty();
+	}
 	return { added, failed, totalIds: added.length + failed.length };
 }
 
@@ -91,5 +96,9 @@ export function unselectItems(
 		}
 	}
 
+	if (added.length > 0) {
+		markUnselectedDirty();
+		markSelectedDirty();
+	}
 	return { added, failed, totalIds: added.length + failed.length };
 }

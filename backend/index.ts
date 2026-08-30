@@ -25,6 +25,10 @@ import {
 } from "./src/services/findItems";
 import { selectItems, unselectItems } from "./src/services/selectItems";
 import { sortItems } from "./src/services/sortItems";
+import {
+	registerClient,
+	unregisterClient,
+} from "./src/services/changeTracking";
 
 seedData();
 
@@ -92,6 +96,17 @@ apiRouter.post(
 		res.json(result);
 	},
 );
+
+apiRouter.get("/events", (req, res) => {
+	res.writeHead(200, {
+		"Content-Type": "text/event-stream",
+		"Cache-Control": "no-cache",
+		Connection: "keep-alive",
+	});
+	res.write("\n");
+	registerClient(res);
+	req.on("close", () => unregisterClient(res));
+});
 
 app.use("/api", apiRouter);
 

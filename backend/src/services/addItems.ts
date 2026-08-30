@@ -7,6 +7,7 @@ import {
 } from "../data";
 import type { TAddItemsQueryParams } from "../schemas";
 import { findFirstIndexGreaterThan, mergeSortedInsert } from "./utilities";
+import { markUnselectedDirty } from "./changeTracking";
 
 export function addItems(ids: TAddItemsQueryParams) {
 	const added: number[] = [];
@@ -31,6 +32,7 @@ export function addItems(ids: TAddItemsQueryParams) {
 		}
 	}
 
+	if (added.length > 0) markUnselectedDirty();
 	return { added, failed, totalIds: added.length + failed.length };
 }
 
