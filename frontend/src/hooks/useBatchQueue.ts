@@ -1,9 +1,11 @@
+import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 import {
 	ADD_INTERVAL_MS,
 	SELECT_INTERVAL_MS,
 } from "../configs/batchingIntervals";
 import { ADD_URL, SELECT_URL, UNSELECT_URL } from "../configs/urls";
+import { pingActivity } from "../handlers/debouncedInvalidate";
 
 type TSelectType = "select" | "unselect";
 
@@ -66,11 +68,13 @@ function useBatchQueue(
 		scheduleFlush();
 	}, []);
 
+	const queryClient = useQueryClient();
 	function enqueue(id: number) {
 		queueRef.current.add(id);
 		writeStoredQueue(storageKey, queueRef.current);
 		setPendingIds((prev) => new Set(prev).add(id));
 		scheduleFlush();
+		pingActivity(queryClient);
 	}
 
 	return { enqueue, pendingIds };
