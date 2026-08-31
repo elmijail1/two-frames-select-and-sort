@@ -8,9 +8,9 @@ interface IFilterProps {
 
 export function Filter({ filter, setFilter }: IFilterProps) {
 	return (
-		<div className="relative max-w-20">
+		<div className="relative max-w-22 flex items-center">
 			<input
-				className="sticky max-w-20 top-0 left-0 z-10 "
+				className="sticky w-18 top-0 left-0 z-10 "
 				type="text"
 				placeholder="Filter by ID"
 				value={filter}
@@ -20,7 +20,7 @@ export function Filter({ filter, setFilter }: IFilterProps) {
 				<button
 					type="reset"
 					onClick={() => setFilter("")}
-					className="w-4 h-4 bg-gray-200 hover:bg-gray-300 rounded-4xl flex justify-center items-center text-gray-500 absolute top-1 -right-1 z-10 border border-gray-300 cursor-pointer"
+					className="h-full bg-gray-200 hover:bg-gray-300 flex justify-center items-center text-gray-800 border border-gray-400 cursor-pointer"
 				>
 					⤫
 				</button>
