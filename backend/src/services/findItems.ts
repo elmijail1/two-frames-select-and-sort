@@ -44,7 +44,8 @@ export function findSelectedItems({
 		items.push(item);
 		nextIndex++;
 	}
-	const newLatestId = items.length ? items[items.length - 1].id : null;
+	const newLatestId =
+		items.length === limit ? items[items.length - 1].id : null;
 	return { items, newLatestId };
 }
 
@@ -76,7 +77,8 @@ export function findUnselectedItems({
 		items.push(item);
 		nextIndex++;
 	}
-	const newLatestId = items.length ? items[items.length - 1].id : null;
+	const newLatestId =
+		items.length === limit ? items[items.length - 1].id : null;
 	return { items, newLatestId };
 }
 
@@ -113,7 +115,7 @@ export function findUnselectedItemsFiltered({
 		if (blockStart > biggestIdUnselected) {
 			return {
 				items,
-				newLatestId: items.length ? items[items.length - 1].id : null,
+				newLatestId: items.length === limit ? items[items.length - 1].id : null,
 			};
 		}
 		const blockEnd = blockStart + blockSize - 1;
@@ -129,7 +131,8 @@ export function findUnselectedItemsFiltered({
 		}
 		d++;
 	}
-	const newLatestId = items.length ? items[items.length - 1].id : null;
+	const newLatestId =
+		items.length === limit ? items[items.length - 1].id : null;
 	return { items, newLatestId };
 }
 
@@ -174,7 +177,8 @@ function handleBareMinusFilter(limit: number, latestId?: number) {
 		nextIndex++;
 	}
 
-	const newLatestId = items.length ? items[items.length - 1].id : null;
+	const newLatestId =
+		items.length === limit ? items[items.length - 1].id : null;
 	return { items, newLatestId };
 }
 
@@ -221,6 +225,7 @@ function handleNegativeFilter(
 		}
 		d--;
 	}
-	const newLatestId = items.length ? items[items.length - 1].id : null;
+	const newLatestId =
+		items.length === limit ? items[items.length - 1].id : null;
 	return { items, newLatestId };
 }
