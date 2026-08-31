@@ -2,6 +2,7 @@ import type { InfiniteData, QueryClient } from "@tanstack/react-query";
 import type { IGetItemsResponse } from "../types/apiTypes";
 import type { TUnselectedQueryKey } from "../types/queryTypes";
 import { appendItemToEnd } from "./appendItemToEnd";
+import { itemExistsInCache } from "./handleAddition";
 
 interface IHandleSelectionProps {
 	id: number;
@@ -42,7 +43,9 @@ export function handleSelection({
 	for (const [key, oldData] of matches) {
 		if (!oldData) continue;
 		const filter = key[2] as string | undefined;
-		if (filter && !String(id).startsWith(filter)) {
+		if (filter && !String(id).startsWith(filter)) continue;
+		if (itemExistsInCache(oldData, id)) {
+			console.warn("Duplication atempt on selection: ", id);
 			continue;
 		}
 		queryClient.setQueryData(key, appendItemToEnd(oldData, id));

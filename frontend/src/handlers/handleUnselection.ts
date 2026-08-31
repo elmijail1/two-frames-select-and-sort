@@ -1,6 +1,7 @@
 import type { InfiniteData, QueryClient } from "@tanstack/react-query";
 import type { IGetItemsResponse } from "../types/apiTypes";
 import type { TSelectedQueryKey } from "../types/queryTypes";
+import { itemExistsInCache } from "./handleAddition";
 import { insertItemSorted } from "./insertItemSorted";
 
 interface IHandleUnselectionProps {
@@ -42,7 +43,9 @@ export function handleUnselection({
 	for (const [key, oldData] of matches) {
 		if (!oldData) continue;
 		const filter = key[2] as string | undefined;
-		if (filter && !String(id).startsWith(filter)) {
+		if (filter && !String(id).startsWith(filter)) continue;
+		if (itemExistsInCache(oldData, id)) {
+			console.warn("Duplication atempt on unselection: ", id);
 			continue;
 		}
 		queryClient.setQueryData(key, insertItemSorted(oldData, id));
