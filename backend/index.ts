@@ -1,3 +1,4 @@
+import path from "node:path";
 import express, {
 	type Express,
 	type NextFunction,
@@ -19,16 +20,16 @@ import {
 } from "./src/schemas";
 import { addItems } from "./src/services/addItems";
 import {
+	registerClient,
+	unregisterClient,
+} from "./src/services/changeTracking";
+import {
 	findSelectedItems,
 	findUnselectedItems,
 	findUnselectedItemsFiltered,
 } from "./src/services/findItems";
 import { selectItems, unselectItems } from "./src/services/selectItems";
 import { sortItems } from "./src/services/sortItems";
-import {
-	registerClient,
-	unregisterClient,
-} from "./src/services/changeTracking";
 
 seedData();
 
@@ -37,6 +38,9 @@ const apiRouter = Router();
 const PORT = process.env.PORT || "3000";
 
 app.use(express.json());
+
+const frontendDist = path.join(__dirname, "../frontend/dist");
+app.use(express.static(frontendDist));
 
 apiRouter.get("/items/unselected", validateGetItemsParams, (req, res) => {
 	if (!hasItemsQuery(req)) {
@@ -109,6 +113,9 @@ apiRouter.get("/events", (req, res) => {
 });
 
 app.use("/api", apiRouter);
+app.use((_req, res) => {
+	res.sendFile(path.join(frontendDist, "index.html"));
+});
 
 app.use(
 	(
