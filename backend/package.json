@@ -5,6 +5,7 @@
 	"main": "index.js",
 	"scripts": {
 		"start": "tsx watch --env-file-if-exists=.env index.ts",
+		"start:prod": "tsx --env-file-if-exists=.env index.ts",
 		"test": "vitest"
 	},
 	"keywords": [],
@@ -13,12 +14,12 @@
 	"type": "commonjs",
 	"dependencies": {
 		"express": "^5.2.1",
-		"zod": "^4.4.3"
+		"zod": "^4.4.3",
+		"tsx": "^4.23.12"
 	},
 	"devDependencies": {
 		"@types/express": "^5.0.6",
 		"@types/node": "^26.2.0",
-		"tsx": "^4.23.12",
 		"typescript": "^7.0.2",
 		"vitest": "^4.1.11"
 	}
