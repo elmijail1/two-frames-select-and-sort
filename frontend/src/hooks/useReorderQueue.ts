@@ -1,6 +1,8 @@
+import { useQueryClient } from "@tanstack/react-query";
 import { useRef } from "react";
 import { REORDER_INTERVAL_MS } from "../configs/batchingIntervals";
 import { REORDER_URL } from "../configs/urls";
+import { pingActivity } from "../handlers/debouncedInvalidate";
 import type { TSide } from "../types/genTypes";
 
 type TReorderEntry = { neighbourId: number; side: TSide };
@@ -37,9 +39,11 @@ export function useReorderQueue() {
 		}
 	}
 
+	const queryClient = useQueryClient();
 	function enqueueReorder(id: number, neighbourId: number, side: TSide) {
 		queueRef.current.set(id, { neighbourId, side });
 		scheduleFlush();
+		pingActivity(queryClient);
 	}
 
 	return { enqueueReorder };

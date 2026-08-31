@@ -1,5 +1,6 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
+import { pingActivity } from "../handlers/debouncedInvalidate";
 
 export function useLiveUpdates(enabled: boolean) {
 	const queryClient = useQueryClient();
@@ -9,12 +10,12 @@ export function useLiveUpdates(enabled: boolean) {
 
 		function connect() {
 			source = new EventSource("/api/events");
-			source.addEventListener("unselected-changed", () => {
-				queryClient.invalidateQueries({ queryKey: ["items", "unselected"] });
-			});
-			source.addEventListener("selected-changed", () => {
-				queryClient.invalidateQueries({ queryKey: ["items", "selected"] });
-			});
+			source.addEventListener("unselected-changed", () =>
+				pingActivity(queryClient),
+			);
+			source.addEventListener("selected-changed", () =>
+				pingActivity(queryClient),
+			);
 		}
 
 		function disconnect() {
@@ -26,6 +27,7 @@ export function useLiveUpdates(enabled: boolean) {
 			if (document.visibilityState === "hidden") {
 				disconnect();
 			} else {
+				disconnect();
 				connect();
 				queryClient.invalidateQueries({ queryKey: ["items"] });
 			}
