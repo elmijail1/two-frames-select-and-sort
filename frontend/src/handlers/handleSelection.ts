@@ -1,6 +1,6 @@
 import type { InfiniteData, QueryClient } from "@tanstack/react-query";
-import type { TUnselectedQueryKey } from "../components/FrameUnselected";
 import type { IGetItemsResponse } from "../types/apiTypes";
+import type { TUnselectedQueryKey } from "../types/queryTypes";
 import { appendItemToEnd } from "./appendItemToEnd";
 
 interface IHandleSelectionProps {
