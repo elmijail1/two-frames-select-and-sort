@@ -10,14 +10,18 @@ import { handleAddition, itemExistsInCache } from "../handlers/handleAddition";
 import { handleSelection } from "../handlers/handleSelection";
 import { insertItemSorted } from "../handlers/insertItemSorted";
 import { prepareObserver } from "../handlers/prepareObserver";
-import { useAddItemQueue, useSelectQueue } from "../hooks/useBatchQueue";
+import { useAddItemQueue } from "../hooks/useBatchQueue";
 import type { IGetItemsResponse } from "../types/apiTypes";
+import type { ISpecificFrameProps } from "../types/genTypes";
 import type { TUnselectedQueryKey } from "../types/queryTypes";
 import { Filter } from "./Filter";
 import { Frame } from "./Frame";
 import { Items } from "./Items";
 
-export function FrameUnselected() {
+export function FrameUnselected({
+	enqueueSelection,
+	pendingSelectedIds,
+}: ISpecificFrameProps) {
 	const sentinelRef = useRef<HTMLDivElement | null>(null);
 	const containerRef = useRef<HTMLElement | null>(null);
 	const [filter, setFilter] = useState<string>("");
@@ -37,16 +41,15 @@ export function FrameUnselected() {
 	);
 
 	const initialPageParam: number | undefined = undefined;
-	const { enqueue: enqueueAddItem, pendingIds } = useAddItemQueue(
-		(failedIds) => {
+	const { enqueue: enqueueAddItem, pendingIds: pendingAddedIds } =
+		useAddItemQueue((failedIds) => {
 			setOverlayIds((prev) => {
 				if (failedIds.every((id) => !prev.has(id))) return prev;
 				const next = new Set(prev);
 				for (const id of failedIds) next.delete(id);
 				return next;
 			});
-		},
-	);
+		});
 	const {
 		data,
 		isLoading,
@@ -101,7 +104,6 @@ export function FrameUnselected() {
 		return () => observer.disconnect();
 	}, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
-	const { enqueue: enqueueSelect } = useSelectQueue("select");
 	const queryClient = useQueryClient();
 
 	function addItem(id: string) {
@@ -182,9 +184,11 @@ export function FrameUnselected() {
 				displayed={items}
 				containerRef={containerRef}
 				onSelect={(id) =>
-					handleSelection({ id, queryClient, queryKey, enqueueSelect })
+					handleSelection({ id, queryClient, queryKey, enqueueSelection })
 				}
-				pendingIds={pendingIds}
+				isPending={(id) =>
+					pendingAddedIds.has(id) || pendingSelectedIds.has(id)
+				}
 			/>
 			<div
 				ref={sentinelRef}

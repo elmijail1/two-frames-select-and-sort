@@ -1,23 +1,24 @@
 import type { InfiniteData, QueryClient } from "@tanstack/react-query";
 import type { IGetItemsResponse } from "../types/apiTypes";
+import type { TSelectionAction } from "../types/genTypes";
 import type { TSelectedQueryKey } from "../types/queryTypes";
 import { itemExistsInCache } from "./handleAddition";
 import { insertItemSorted } from "./insertItemSorted";
 
 interface IHandleUnselectionProps {
 	id: number;
-	enqueueUnselect: (id: number) => void;
+	enqueueSelection: (id: number, action: TSelectionAction) => void;
 	queryKey: TSelectedQueryKey;
 	queryClient: QueryClient;
 }
 
 export function handleUnselection({
 	id,
-	enqueueUnselect,
+	enqueueSelection,
 	queryKey,
 	queryClient,
 }: IHandleUnselectionProps) {
-	enqueueUnselect(id);
+	enqueueSelection(id, "unselect");
 
 	queryClient.setQueryData(
 		queryKey,
@@ -45,7 +46,7 @@ export function handleUnselection({
 		const filter = key[2] as string | undefined;
 		if (filter && !String(id).startsWith(filter)) continue;
 		if (itemExistsInCache(oldData, id)) {
-			console.warn("Duplication atempt on unselection: ", id);
+			console.warn("Duplication attempt on unselection: ", id);
 			continue;
 		}
 		queryClient.setQueryData(key, insertItemSorted(oldData, id));
