@@ -135,8 +135,10 @@ export function FrameUnselected({
 			queryClient.getQueryData<InfiniteData<IGetItemsResponse>>(queryKey);
 		if (!raw) return;
 		setOverlayIds((prev) => {
+			console.log("overlayIds prev: ", prev);
 			let changed = false;
 			const next = new Set(prev);
+			console.log("overlayIds next: ", next);
 			for (const id of prev) {
 				if (itemExistsInCache(raw, id)) {
 					next.delete(id);

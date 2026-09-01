@@ -3,12 +3,12 @@ import { useRef, useState } from "react";
 import { SELECT_INTERVAL_MS } from "../configs/batchingIntervals";
 import { SELECT_URL, UNSELECT_URL } from "../configs/urls";
 import { pingActivity } from "../handlers/debouncedInvalidate";
-import type { TToggleAction } from "../types/genTypes";
+import type { TSelectionAction } from "../types/genTypes";
 
 export function useToggleQueue() {
-	const queueRef = useRef<Map<number, TToggleAction>>(new Map());
+	const queueRef = useRef<Map<number, TSelectionAction>>(new Map());
 	const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-	const [pendingIds, setPendingIds] = useState<Map<number, TToggleAction>>(
+	const [pendingIds, setPendingIds] = useState<Map<number, TSelectionAction>>(
 		new Map(),
 	);
 	const queryClient = useQueryClient();
@@ -25,10 +25,10 @@ export function useToggleQueue() {
 		for (const [id] of entries) queueRef.current.delete(id);
 
 		const toSelect = entries
-			.filter(([_a, b]) => b === "select")
+			.filter(([, b]) => b === "select")
 			.map(([id]) => id);
 		const toUnselect = entries
-			.filter(([_a, b]) => b === "unselect")
+			.filter(([, b]) => b === "unselect")
 			.map(([id]) => id);
 
 		const requests: Promise<Response>[] = [];
@@ -66,7 +66,7 @@ export function useToggleQueue() {
 		}
 	}
 
-	function enqueue(id: number, action: TToggleAction) {
+	function enqueue(id: number, action: TSelectionAction) {
 		queueRef.current.set(id, action);
 		setPendingIds((prev) => new Map(prev).set(id, action));
 		scheduleFlush();
