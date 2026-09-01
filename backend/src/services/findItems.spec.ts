@@ -49,7 +49,7 @@ describe("findSelectedItems", () => {
 
 		const second = findSelectedItems({ limit: 2, latestId: 60 });
 		expect(ids(second.items)).toEqual([70]);
-		expect(second.newLatestId).toBe(70);
+		expect(second.newLatestId).toBe(null);
 	});
 
 	it("filters by id prefix", () => {

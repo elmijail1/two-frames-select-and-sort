@@ -1,22 +1,24 @@
 import type { InfiniteData, QueryClient } from "@tanstack/react-query";
 import type { IGetItemsResponse } from "../types/apiTypes";
+import type { TSelectionAction } from "../types/genTypes";
 import type { TUnselectedQueryKey } from "../types/queryTypes";
 import { appendItemToEnd } from "./appendItemToEnd";
+import { itemExistsInCache } from "./handleAddition";
 
 interface IHandleSelectionProps {
 	id: number;
-	enqueueSelect: (id: number) => void;
+	enqueueSelection: (id: number, action: TSelectionAction) => void;
 	queryKey: TUnselectedQueryKey;
 	queryClient: QueryClient;
 }
 
 export function handleSelection({
 	id,
-	enqueueSelect,
+	enqueueSelection,
 	queryKey,
 	queryClient,
 }: IHandleSelectionProps) {
-	enqueueSelect(id);
+	enqueueSelection(id, "select");
 
 	queryClient.setQueryData(
 		queryKey,
@@ -42,7 +44,9 @@ export function handleSelection({
 	for (const [key, oldData] of matches) {
 		if (!oldData) continue;
 		const filter = key[2] as string | undefined;
-		if (filter && !String(id).startsWith(filter)) {
+		if (filter && !String(id).startsWith(filter)) continue;
+		if (itemExistsInCache(oldData, id)) {
+			console.warn("Duplication attempt on selection: ", id);
 			continue;
 		}
 		queryClient.setQueryData(key, appendItemToEnd(oldData, id));

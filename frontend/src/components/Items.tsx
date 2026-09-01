@@ -9,7 +9,7 @@ interface IItemsProps {
 	onSelect: (id: number) => void;
 	sorted?: boolean;
 	containerRef: React.RefObject<HTMLElement | null>;
-	pendingIds?: Set<number>;
+	isPending?: (id: number) => boolean;
 }
 
 const ITEM_SIZE_PX_SMALL = 64;
@@ -36,7 +36,7 @@ export function Items({
 	onSelect,
 	sorted,
 	containerRef,
-	pendingIds,
+	isPending,
 }: IItemsProps) {
 	const [itemsPerRow, setItemsPerRow] = useState(1);
 	useEffect(() => {
@@ -74,7 +74,13 @@ export function Items({
 		return (
 			<div className="flex flex-wrap my-0 gap-2">
 				{displayed.map((i, ind) => (
-					<ItemSortable key={i.id} id={i.id} index={ind} onSelect={onSelect} />
+					<ItemSortable
+						key={i.id}
+						id={i.id}
+						index={ind}
+						onSelect={onSelect}
+						pending={isPending?.(i.id)}
+					/>
 				))}
 			</div>
 		);
@@ -101,7 +107,7 @@ export function Items({
 							key={item.id}
 							id={item.id}
 							onSelect={onSelect}
-							pending={pendingIds?.has(item.id)}
+							pending={isPending?.(item.id)}
 						/>
 					))}
 				</div>

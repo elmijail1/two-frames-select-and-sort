@@ -1,13 +1,8 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
-import {
-	ADD_INTERVAL_MS,
-	SELECT_INTERVAL_MS,
-} from "../configs/batchingIntervals";
-import { ADD_URL, SELECT_URL, UNSELECT_URL } from "../configs/urls";
+import { ADD_INTERVAL_MS } from "../configs/batchingIntervals";
+import { ADD_URL } from "../configs/urls";
 import { pingActivity } from "../handlers/debouncedInvalidate";
-
-type TSelectType = "select" | "unselect";
 
 function useBatchQueue(
 	url: string,
@@ -66,6 +61,7 @@ function useBatchQueue(
 		for (const id of stored) queueRef.current.add(id);
 		setPendingIds(new Set(queueRef.current));
 		scheduleFlush();
+		// eslint-disable-next-line react-hooks/exhaustive-deps -- intentional mount-only effect
 	}, []);
 
 	const queryClient = useQueryClient();
@@ -78,11 +74,6 @@ function useBatchQueue(
 	}
 
 	return { enqueue, pendingIds };
-}
-
-export function useSelectQueue(selectType: TSelectType) {
-	const url = selectType === "select" ? SELECT_URL : UNSELECT_URL;
-	return useBatchQueue(url, SELECT_INTERVAL_MS, `queue:${selectType}`);
 }
 
 export function useAddItemQueue(onFailed?: (ids: number[]) => void) {

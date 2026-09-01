@@ -9,14 +9,14 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { fetchItems } from "../handlers/fetchItems";
 import { handleReorder } from "../handlers/handleReorder";
 import { handleUnselection } from "../handlers/handleUnselection";
-import { useSelectQueue } from "../hooks/useBatchQueue";
+import { prepareObserver } from "../handlers/prepareObserver";
 import { useReorderQueue } from "../hooks/useReorderQueue";
+import type { IGetItemsResponse } from "../types/apiTypes";
+import type { ISpecificFrameProps } from "../types/genTypes";
 import type { TSelectedQueryKey } from "../types/queryTypes";
 import { Filter } from "./Filter";
 import { Frame } from "./Frame";
 import { Items } from "./Items";
-import { prepareObserver } from "../handlers/prepareObserver";
-import type { IGetItemsResponse } from "../types/apiTypes";
 
 interface SortableDraggable {
 	sortable: { index: number };
@@ -27,7 +27,10 @@ function hasSortableIndex(x: unknown): x is SortableDraggable {
 	return typeof x === "object" && x !== null && "sortable" in x;
 }
 
-export function FrameSelected() {
+export function FrameSelected({
+	enqueueSelection,
+	pendingSelectedIds,
+}: ISpecificFrameProps) {
 	const sentinelRef = useRef<HTMLDivElement | null>(null);
 	const containerRef = useRef<HTMLElement | null>(null);
 	const [filter, setFilter] = useState<string>("");
@@ -83,7 +86,6 @@ export function FrameSelected() {
 		return () => observer.disconnect();
 	}, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
-	const { enqueue: enqueueUnselect } = useSelectQueue("unselect");
 	const queryClient = useQueryClient();
 
 	const { enqueueReorder } = useReorderQueue();
@@ -138,10 +140,11 @@ export function FrameSelected() {
 				<Items
 					displayed={items}
 					onSelect={(id) =>
-						handleUnselection({ id, enqueueUnselect, queryKey, queryClient })
+						handleUnselection({ id, enqueueSelection, queryKey, queryClient })
 					}
 					sorted={true}
 					containerRef={containerRef}
+					isPending={(id) => pendingSelectedIds.has(id)}
 				/>
 				<div
 					ref={sentinelRef}
