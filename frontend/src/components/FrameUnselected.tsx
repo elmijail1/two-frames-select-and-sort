@@ -134,6 +134,7 @@ export function FrameUnselected({
 		const raw =
 			queryClient.getQueryData<InfiniteData<IGetItemsResponse>>(queryKey);
 		if (!raw) return;
+		// eslint-disable-next-line react-hooks/set-state-in-effect -- reconciling local optimistic state against the query cache (an external system) is the "subscribe to external updates" pattern that this rule allows
 		setOverlayIds((prev) => {
 			console.log("overlayIds prev: ", prev);
 			let changed = false;

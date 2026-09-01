@@ -61,6 +61,7 @@ function useBatchQueue(
 		for (const id of stored) queueRef.current.add(id);
 		setPendingIds(new Set(queueRef.current));
 		scheduleFlush();
+		// eslint-disable-next-line react-hooks/exhaustive-deps -- intentional mount-only effect
 	}, []);
 
 	const queryClient = useQueryClient();
